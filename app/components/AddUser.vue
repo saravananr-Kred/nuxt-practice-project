@@ -1,0 +1,288 @@
+<template>
+  <Modal
+    :isOpen="open"
+    :title="id === 0 ? 'Add User' : 'Edit User'"
+    @close="openAddUser(false)"
+  >
+    <form
+      @submit.prevent="addUser"
+      id="addUserForm"
+      enctype="multipart/form-data"
+    >
+      <div class="flex flex-col gap-y-4 w-full">
+        <FileInput
+          @handle-file-upload="handleFileUpload"
+          @clear-image="clearImage"
+          :imagePreview="imagePreview"
+          :selectedFile="selectedFile"
+        />
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <Input
+            v-model="name"
+            v-bind="nameProps"
+            :error="errors.name"
+            label="Full Name"
+            placeholder="John Doe"
+            layout="form"
+          />
+          <Input
+            v-model="email"
+            v-bind="emailProps"
+            :error="errors.email"
+            label="Email Address"
+            placeholder="john@example.com"
+            layout="form"
+          />
+          <Input
+            v-model="age"
+            v-bind="ageProps"
+            :error="errors.age"
+            label="Age"
+            type="number"
+            layout="form"
+          />
+          <Input
+            v-model="phone"
+            v-bind="phoneProps"
+            :error="errors.phone"
+            label="Phone"
+            layout="form"
+          />
+          <Select
+            v-model="gender"
+            v-bind="genderProps"
+            :error="errors.gender"
+            :options="statusOptions"
+            label="Gender"
+            layout="form"
+          />
+          <Select
+            v-model="role"
+            v-bind="roleProps"
+            :error="errors.role"
+            :options="roleOptions"
+            label="Account Role"
+            layout="form"
+          />
+          <Input
+            v-model="dob"
+            v-bind="dobProps"
+            :error="errors.dob"
+            label="Date of Birth"
+            type="date"
+            layout="form"
+          />
+        </div>
+
+        <div v-if="id === 0" class="grid grid-cols-2 gap-4 pt-4 border-t">
+          <Input
+            v-model="password"
+            v-bind="passwordProps"
+            :error="errors.password"
+            label="Password"
+            type="password"
+            layout="form"
+          />
+          <Input
+            v-model="confirmPassword"
+            v-bind="confirmPasswordProps"
+            :error="errors.confirmPassword"
+            label="Confirm"
+            type="password"
+            layout="form"
+          />
+        </div>
+      </div>
+    </form>
+
+    <template #footer>
+      <div class="flex gap-x-3 justify-end w-full">
+        <Button
+          colorClasses="bg-[#c8c6c6] hover:bg-[#cccbcb] text-black-600"
+          @click="openAddUser(false)"
+          >Cancel</Button
+        >
+        <Button type="submit" form="addUserForm" :disabled="loadingUsers">
+          <Spinner :loading="loadingUsers" class="mr-2" />
+          {{ id === 0 ? "Create User" : "Save Changes" }}
+        </Button>
+      </div>
+    </template>
+  </Modal>
+</template>
+
+<script lang="ts" setup>
+import { useForm, configure } from "vee-validate";
+import * as yup from "yup";
+
+// refs
+const id = ref<number>(0);
+const user = useUsersStore();
+const { singleUser, loadingUsers } = storeToRefs(user);
+const selectedFile = ref<File | null>(null);
+const imagePreview = ref<string | null>(null);
+
+// model
+const open = defineModel<boolean>({ required: true });
+
+// emits
+const emit = defineEmits<{ (e: "refresh-data"): () => void }>();
+
+// props
+const props = defineProps<{
+  data: any | null;
+  userId: number;
+}>();
+
+function handleFileUpload(event: Event) {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    selectedFile.value = target.files[0];
+    imagePreview.value = URL.createObjectURL(target.files[0]);
+  }
+}
+
+function clearImage() {
+  selectedFile.value = null;
+  imagePreview.value = null;
+}
+
+const schema = yup.object({
+  name: yup.string().required("Name is required"),
+  password: yup.string().when([], {
+    is: () => id.value === 0,
+    then: (schema) =>
+      schema.required("Password is required").min(8, "Min 8 characters"),
+    otherwise: (schema) => schema.optional(),
+  }),
+  confirmPassword: yup.string().when("password", {
+    is: (password: string) => password?.length > 0,
+    then: (schema) =>
+      schema
+        .required("Confirm Password is required")
+        .min(8, "Min 8 characters")
+        .oneOf([yup.ref("password")], "Passwords must match"),
+    otherwise: (schema) => schema.optional(),
+  }),
+  age: yup
+    .number()
+    .required("Age is required")
+    .positive("Age must be positive number")
+    .integer("Age must be integer"),
+  gender: yup.string().required("Gender is required"),
+  phone: yup
+    .string()
+    .required("Phone is required")
+    .matches(/^[0-9]+$/, "Phone must only contain digits")
+    .min(10, "Phone must be at least 10 digits"),
+  email: yup.string().email("Enter valid email").required("Email is required"),
+  dob: yup.string().required("DOB is required"),
+  role: yup.number().required("Role is required"),
+});
+
+const { handleSubmit, resetForm, errors, setValues, defineField } = useForm({
+  validationSchema: schema,
+  initialValues: {
+    name: "",
+    password: "",
+    confirmPassword: "",
+    age: 0,
+    gender: "",
+    phone: "",
+    email: "",
+    dob: "",
+    role: 0,
+  },
+});
+
+const [name, nameProps] = defineField("name");
+const [age, ageProps] = defineField("age");
+const [gender, genderProps] = defineField("gender");
+const [phone, phoneProps] = defineField("phone");
+const [email, emailProps] = defineField("email");
+const [dob, dobProps] = defineField("dob");
+const [password, passwordProps] = defineField("password");
+const [confirmPassword, confirmPasswordProps] = defineField("confirmPassword");
+const [role, roleProps] = defineField("role");
+
+let roleOptions = [
+  { label: "Admin", value: 1 },
+  { label: "User", value: 2 },
+];
+
+configure({
+  validateOnBlur: true,
+  validateOnChange: true,
+  validateOnInput: false,
+  validateOnModelUpdate: true,
+});
+
+function openAddUser(value: boolean) {
+  resetForm();
+  clearImage();
+  open.value = value;
+}
+
+let statusOptions = [
+  { label: "Male", value: "male" },
+  { label: "Female", value: "female" },
+  { label: "Other", value: "other" },
+];
+
+const addUser = handleSubmit(async (values: any) => {
+  try {
+    const formData = new FormData();
+
+    Object.keys(values).forEach((key) => {
+      if (values[key] !== null && values[key] !== undefined) {
+        formData.append(key, values[key]);
+      }
+    });
+
+    if (selectedFile.value) {
+      formData.append("profile_image", selectedFile.value);
+    }
+
+    if (id.value === 0) {
+      await user.AddUserApi(formData);
+    } else {
+      formData.append("_method", "PUT");
+      await user.UpdateUser(formData, id.value);
+    }
+
+    resetForm();
+    clearImage();
+    emit("refresh-data");
+    open.value = false;
+  } catch (error) {
+    console.error("Submission failed:", error);
+  }
+});
+
+watch(
+  () => singleUser.value,
+  (newData) => {
+    if (newData?.id) {
+      // We are EDITING
+      id.value = newData.id;
+      // Map the prop data to the form state
+      setValues({
+        name: newData.name || "",
+        password: "",
+        age: newData.age || 0,
+        gender: newData.gender || "",
+        phone: newData.phone || "",
+        email: newData.email || "",
+        dob: newData.dob || "",
+        role: newData.role || 0,
+      });
+    } else {
+      // We are ADDING
+      id.value = 0;
+      resetForm();
+    }
+  },
+  { immediate: true, deep: true },
+);
+</script>
