@@ -135,7 +135,7 @@
 
               <td class="px-4 py-4 whitespace-nowrap text-right" @click.stop>
                 <div
-                  class="flex items-center justify-end gap-x-2 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100"
+                  class="flex items-center justify-end gap-x-2 transition-opacity focus-within:opacity-100"
                 >
                   <button
                     v-if="can('edit-user')"
