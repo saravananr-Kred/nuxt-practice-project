@@ -1,32 +1,48 @@
 import { defineStore } from "pinia";
-let toastTimer: ReturnType<typeof setTimeout>;
 
 export const useToastStore = defineStore("Toast", {
   state: () => ({
-    show: true as boolean,
+    show: false as boolean,
     message: "" as string,
     type: "" as string,
+    duration: 0 as number,
+    toastTimer: null as ReturnType<typeof setTimeout> | null,
   }),
   actions: {
     showSuccess(msg: string) {
-      clearTimeout(toastTimer);
+      if (!import.meta.client) return;
+      this.clearActiveTimer();
       this.show = true;
       this.message = msg;
       this.type = "success";
-      toastTimer = setTimeout(() => {
-        this.show = false;
-      }, 2500);
-    },
-    showError(msg: string) {
-      clearTimeout(toastTimer);
-      this.show = true;
-      this.message = msg;
-      this.type = "error";
-      toastTimer = setTimeout(() => {
+      this.duration = 2500;
+
+      this.toastTimer = setTimeout(() => {
         this.show = false;
         this.message = "";
         this.type = "";
-      }, 4000);
+        this.duration = 0;
+      }, this.duration);
+    },
+    showError(msg: string) {
+      if (!import.meta.client) return;
+      this.clearActiveTimer();
+      this.show = true;
+      this.message = msg;
+      this.type = "error";
+      this.duration = 4000;
+      this.toastTimer = setTimeout(() => {
+        this.show = false;
+        this.message = "";
+        this.type = "";
+        this.duration = 0;
+      }, this.duration);
+    },
+    clearActiveTimer() {
+      if (this.toastTimer) {
+        clearTimeout(this.toastTimer);
+        this.toastTimer = null;
+      }
     },
   },
 });

@@ -42,7 +42,7 @@ function getFileNames() {
 
 <template>
   <div
-    class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 p-4 rounded-xl hover:border-indigo-500 transition-colors w-full"
+    class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 p-4 rounded-xl hover:border-indigo-500 transition-colors w-full relative"
   >
     <div v-if="type === 'image' && imagePreview" class="relative group">
       <img
@@ -62,12 +62,12 @@ function getFileNames() {
     <!-- DOCUMENT PREVIEW -->
     <div
       v-else-if="type === 'document' && imagePreview"
-      class="grid grid-cols-3 gap-4 w-full mt-2 relative"
+      class="grid grid-cols-3 gap-4 w-full mt-2"
     >
       <div
         v-for="(file, index) in imagePreview"
         :key="index"
-        class="flex flex-col items-center p-3 border rounded-lg bg-gray-50 hover:bg-indigo-50 transition relative"
+        class="flex flex-col items-center p-3 border rounded-lg bg-gray-50 hover:bg-indigo-50 transition"
       >
         <div class="text-indigo-500 mb-2">
           <img :src="Icons.Document" class="w-10 h-10" />
@@ -81,7 +81,7 @@ function getFileNames() {
       <button
         @click="clearImage"
         type="button"
-        class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow"
+        class="absolute top-3 right-3 bg-red-500 text-white rounded-full p-1 shadow"
       >
         <XMark />
       </button>

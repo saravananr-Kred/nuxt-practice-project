@@ -5,6 +5,7 @@
     <ErrorBoundary>
       <slot />
     </ErrorBoundary>
+    <Toast />
   </div>
 </template>
 

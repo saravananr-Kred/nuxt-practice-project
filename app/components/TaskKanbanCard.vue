@@ -49,7 +49,6 @@ const formattedDate = computed(() => {
     year: "numeric",
   });
 });
-console.log(props.task, "tasl ");
 </script>
 
 <template>

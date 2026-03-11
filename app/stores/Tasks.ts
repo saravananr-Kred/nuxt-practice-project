@@ -20,7 +20,6 @@ export const useTasksStore = defineStore("Task", () => {
   });
 
   const handleError = (error: any) => {
-    console.log(error, "error");
     const msg =
       error?.data?.message ||
       error?.message ||
@@ -90,7 +89,7 @@ export const useTasksStore = defineStore("Task", () => {
     loadingTasks.value = true;
     try {
       await $api("/api/tasks/" + id, {
-        method: "put",
+        method: "post",
         body: taskData,
       });
 

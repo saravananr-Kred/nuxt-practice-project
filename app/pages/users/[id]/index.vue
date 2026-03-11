@@ -24,7 +24,6 @@ const { data, pending, error } = await useAsyncData(
   async () => {
     const { $api } = useNuxtApp();
 
-    await timeOut(1500);
     const [userData, tasks] = await Promise.all([
       $api<AllUsersDetailsData>(`/api/user-details/${route.params.id}`),
       $api<{ data: TaskData[] }>(`/api/users/${route.params.id}/task`),

@@ -12,8 +12,7 @@ interface props {
 
 const props = withDefaults(defineProps<props>(), {
   label: "Submit",
-  colorClasses:
-    "bg-btn_bg-primary transition delay-200 ease-in text-navy-text hover:shadow-[2px_6px_6px_-2px_#4c4c6e69] ",
+  colorClasses: "bg-btn_bg-primary text-navy-text hover:shadow-navy-glow",
   paddingClasses: "px-4 py-2",
   radiusClasses: "rounded-lg",
   additionalClasses: "",
@@ -33,7 +32,7 @@ function addTask() {
       props.paddingClasses,
       props.radiusClasses,
       props.additionalClasses,
-      ' cursor-pointer',
+      ' transition delay-100 ease-in  cursor-pointer',
     ]"
     v-on="props.type !== 'submit' ? { click: addTask } : {}"
     :type="props.type"

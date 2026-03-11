@@ -36,7 +36,6 @@ const sortBy = ref<string>("name");
 const sortOrder = ref<"asc" | "desc">("asc");
 
 function handleSort(column: string) {
-  console.log(column, "column");
   if (sortBy.value === column) {
     sortBy.value = column;
     sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
@@ -54,6 +53,7 @@ const cacheKey = computed(
 );
 
 const {
+  data: apiResponse,
   pending: loadingUsers,
   error,
   refresh,
@@ -76,10 +76,6 @@ const {
     try {
       const data = await $api(url);
 
-      lastPage.value = data?.last_page ?? 1;
-      totalUsers.value = data?.total ?? 0;
-      userStore.users = data?.data ?? [];
-
       return data ?? {};
     } catch (err) {
       console.error(err);
@@ -88,7 +84,6 @@ const {
   },
   {
     watch: [currentPage, perPage, sortBy, sortOrder],
-    lazy: true,
   },
 );
 
@@ -138,6 +133,18 @@ async function HandleUserEdit(data: number) {
 function HandleUserDelete(id: number) {
   userStore.DeleteUser(id);
 }
+
+watch(
+  apiResponse,
+  (newData) => {
+    if (newData) {
+      lastPage.value = newData.last_page ?? 1;
+      totalUsers.value = newData.total ?? 0;
+      userStore.users = newData.data ?? [];
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -155,7 +162,6 @@ function HandleUserDelete(id: number) {
       </div>
 
       <div class="mt-4 sm:mt-0 flex items-center gap-3">
-        <Toast />
         <Button
           v-if="can('add-user')"
           @button-click="handleOpenModal(true)"
@@ -166,7 +172,6 @@ function HandleUserDelete(id: number) {
         </Button>
       </div>
     </div>
-
     <Table
       :loading="loadingUsers"
       :headerConfig="headers"

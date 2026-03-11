@@ -58,6 +58,13 @@
     </form>
     <template #footer>
       <Button
+        additionalClasses="font-semibold"
+        @button-click="openAddTask(false)"
+        colorClasses="bg-btn-secondary text-[#2e2e2e] hover:shadow-btn-secondary"
+      >
+        Cancel
+      </Button>
+      <Button
         type="submit"
         form="addTaskForm"
         additionalClasses="font-semibold"
@@ -81,7 +88,7 @@
 
 <script lang="ts" setup>
 import { debounce } from "@/utils/debounce";
-
+import type { SearchUserResponse } from "@/Types/Data";
 type SearchUser = {
   type: string;
   id: number;
@@ -142,12 +149,23 @@ const filePreview = (files: string[]) => {
     return file.replace("task_documents/", "");
   });
 };
+const assignedTo = ref<number | null>(null);
+const assignedUser = ref<{ id: number; name: string; email: string } | null>(
+  null,
+);
+
+const CheckOption = <T extends { value: number | string }>(
+  value: number | null,
+  array: T[],
+) => {
+  return !array.some((x) => x.value === value);
+};
 
 // Build user dropdown options from filteredUsers
 watch(
   users,
-  (newUsers) => {
-    userOptions.value = newUsers.map((user) => ({
+  (newValue) => {
+    userOptions.value = newValue.map((user) => ({
       label: user.name,
       value: user.user_id,
     }));
@@ -155,15 +173,26 @@ watch(
   { immediate: true },
 );
 
+watchEffect(() => {
+  if (CheckOption(assignedTo.value, userOptions.value)) {
+    userOptions.value = [
+      ...userOptions.value,
+      {
+        label: assignedUser.value?.name || "",
+        value: assignedUser.value?.id || 0,
+      },
+    ];
+  }
+});
+
 const id = ref<number>(0);
-const assignedTo = ref<number | null>(null);
 
 const taskData = ref<TaskFormData>({
   name: "",
   status: "Open",
   end_date: "",
   notes: "",
-  priority: "Medium",
+  priority: "Low",
   assigned_to: null,
 });
 
@@ -171,7 +200,7 @@ const taskData = ref<TaskFormData>({
 watch(assignedTo, (val) => {
   taskData.value.assigned_to = val ? Number(val) : null;
 });
-console.log(assignedTo, "assignedTo");
+
 function openAddTask(value: boolean) {
   resetForm();
   open.value = value;
@@ -185,7 +214,7 @@ function resetForm() {
     status: "Open",
     end_date: "",
     notes: "",
-    priority: "Medium",
+    priority: "Low",
     assigned_to: null,
   };
   clearDocument();
@@ -258,16 +287,15 @@ watch(
   () => singleTask.value,
   (newData) => {
     if (newData?.id) {
-      console.log(newData, "newData");
-
       id.value = newData.id;
       assignedTo.value = newData.assigned_to ? newData.assigned_to.id : null;
+      assignedUser.value = newData.assigned_to;
       taskData.value = {
         name: newData.name || "",
         status: newData.status || "Open",
         end_date: newData.end_date || "",
         notes: newData.notes || "",
-        priority: newData.priority || "Medium",
+        priority: newData.priority || "Low",
         assigned_to: newData.assigned_to?.id || null,
       };
       filePreview(newData.file_url);

@@ -23,7 +23,6 @@ export const useLoginStore = defineStore("login", () => {
   const isLoggedIn = computed(() => !!token.value);
 
   const handleError = (error: any) => {
-    console.log(error, "error");
     const msg =
       error?.data?.message ||
       error?.message ||
@@ -85,13 +84,11 @@ export const useLoginStore = defineStore("login", () => {
 
   const logout = async () => {
     try {
-      await $fetch("/api/logout", { method: "POST" });
-    } catch (e) {
-    } finally {
       token.value = null;
       user.value = null;
       navigateTo("/login");
-    }
+      await $fetch("/api/logout", { method: "POST" });
+    } catch (e) {}
   };
 
   const sendOtp = async (email: string) => {
@@ -104,7 +101,6 @@ export const useLoginStore = defineStore("login", () => {
           body: { email },
         },
       );
-      console.log(response, "response");
 
       if (response.message.includes("OTP has been sent")) {
         resetEmail.value = email;

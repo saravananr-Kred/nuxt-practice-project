@@ -5,7 +5,7 @@ export const useUsersStore = defineStore("User", () => {
   const search = ref<string>("");
 
   const singleUser = ref<AllUsersDetailsData | null>(null);
-  const { showSuccess } = useToastStore();
+  const { showSuccess, showError } = useToastStore();
   const { $api } = useNuxtApp();
 
   // ============= Computed Values ============= //
@@ -15,7 +15,6 @@ export const useUsersStore = defineStore("User", () => {
   // ============= Actions ============= //
 
   const handleError = (error: any) => {
-    console.log(error, "error");
     const msg =
       error?.data?.message ||
       error?.message ||

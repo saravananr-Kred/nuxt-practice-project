@@ -62,7 +62,7 @@ const isExpired = (date: string) => {
   return new Date(date) < new Date();
 };
 
-const licenses = ref<License[]>([
+const licenses = useState<License[]>("user-licenses", () => [
   {
     id: 0,
     number: "",
@@ -70,7 +70,6 @@ const licenses = ref<License[]>([
     city: "",
     endDate: "",
     startDate: "",
-
     isSaved: false,
   },
 ]);
@@ -141,7 +140,6 @@ const addLicense = () => {
 };
 
 const removeLicense = (data: License, index: number) => {
-  console.log(data, "data");
   if (data.id !== 0) {
     deleteDialog.value = true;
     selectedLicense.value = data;
@@ -153,11 +151,21 @@ const removeLicense = (data: License, index: number) => {
 };
 
 const confirmDelete = async () => {
-  console.log(selectedLicense.value?.id, "delete id");
-
-  let response = await $api("/api/user/license/" + selectedLicense.value?.id);
-
-  console.log(response);
+  try {
+    await $api("/api/user/license/" + selectedLicense.value?.id, {
+      method: "delete",
+    });
+    toastStore.showSuccess("License Deleted Successfully!");
+    const updated = await getLicenses();
+    licenses.value = updated;
+  } catch (error: any) {
+    const msg =
+      error?.data?.message ||
+      error?.message ||
+      error?.statusMessage ||
+      "An unexpected error occurred";
+    toastStore.showError(msg);
+  }
 
   deleteDialog.value = false;
 };
@@ -166,23 +174,29 @@ const cancelDelete = () => {
   deleteDialog.value = false;
 };
 
+const onLicenseChange = (index: number) => {
+  const license = licenses.value[index];
+  if (license && license.id !== 0) {
+    license.isSaved = false;
+  }
+};
+
 const handleStateChange = (index: number) => {
-  console.log(index, "index");
   if (licenses.value[index]) {
     licenses.value[index].city = "";
+    onLicenseChange(index);
   }
 };
 
 const saveLicenses = async () => {
   isSaving.value = true;
   let validData = validateLicense();
-
+  console.log(validData, "validData");
   if (errors.value.length > 0) {
     toastStore.showError("Please fill all fields before saving.");
     isSaving.value = false;
     return;
   }
-  console.log(validData, "to save");
   try {
     const { $api } = useNuxtApp();
     const data = await $api(`/api/user/${route.params.id}/license`, {
@@ -190,10 +204,9 @@ const saveLicenses = async () => {
       body: { licenses: validData },
     });
 
-    if (data?.message === "success") {
-      toastStore.showSuccess("Licenses inserted successfully");
-      await refresh(); // Refresh data
-    }
+    toastStore.showSuccess("Licenses inserted successfully");
+    const updated = await getLicenses();
+    licenses.value = updated;
   } catch (e: any) {
     toastStore.showError(e?.data?.message || e?.message || "Update failed");
   } finally {
@@ -206,15 +219,16 @@ const activeMenu2 = ref<number | null>(null);
 
 const formatDate = (date: any) => {
   if (!date) return "";
-  return new Date(date).toLocaleDateString();
+  // Use a fixed locale to prevent hydration mismatches
+  return new Date(date).toLocaleDateString("en-GB");
 };
 
 const getLicenses = async () => {
   const { $api } = useNuxtApp();
   try {
     const response = await $api(`/api/user/${route.params.id}/license`);
-    if (response) {
-      licenses.value = response.map((l: any) => ({
+    if (response && response.length > 0) {
+      return response.map((l: any) => ({
         id: l.id,
         number: l.license_number,
         state: l.license_state,
@@ -224,14 +238,33 @@ const getLicenses = async () => {
         isSaved: true,
       }));
     }
+    // Return a default empty row if no licenses found
+    return [
+      {
+        id: 0,
+        number: "",
+        state: "",
+        city: "",
+        endDate: "",
+        startDate: "",
+        isSaved: false,
+      },
+    ];
   } catch (e) {
     console.error("Fetch failed", e);
+    return [];
   }
 };
 
-const { pending, error, refresh } = useAsyncData("licenses", () =>
-  getLicenses(),
-);
+const {
+  data: fetchedLicenses,
+  pending,
+  error,
+} = await useAsyncData("licenses", () => getLicenses());
+
+if (fetchedLicenses.value) {
+  licenses.value = fetchedLicenses.value;
+}
 </script>
 <template>
   <div class="max-w-6xl mx-auto space-y-8 pb-20">
@@ -334,6 +367,7 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
                 v-model="license.number"
                 type="text"
                 placeholder="Ex: LIC-9920-X"
+                @input="onLicenseChange(index)"
                 class="input-style font-mono tracking-wider"
                 :class="{
                   'border-1 border-red-500':
@@ -387,6 +421,7 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
                   density="comfortable"
                   hide-details
                   :menu-props="{ contentClass: 'custom-dropdown-menu' }"
+                  @update:model-value="onLicenseChange(index)"
                   class="custom-v-select"
                   :class="{
                     'border-red-500': errors.includes(index) && !license.city,
@@ -439,6 +474,7 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
                     @update:model-value="
                       (val) => {
                         license.startDate = toYMD(val);
+                        onLicenseChange(index);
                         activeMenu1 = null;
                       }
                     "
@@ -495,6 +531,7 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
                       (val) => {
                         activeMenu2 = null;
                         license.endDate = toYMD(val);
+                        onLicenseChange(index);
                       }
                     "
                   ></v-date-picker>
@@ -533,7 +570,6 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
         </button>
       </div>
     </div>
-    <Toast />
 
     <ConfirmDelete
       v-model="deleteDialog"

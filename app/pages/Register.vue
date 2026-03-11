@@ -235,7 +235,6 @@ const handleRegister = handleSubmit(async (values: any) => {
           Login
         </NuxtLink>
       </div>
-      <Toast />
     </div>
   </div>
 </template>

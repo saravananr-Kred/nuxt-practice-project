@@ -2,7 +2,13 @@
 
 @theme {
   --color-navy-text: #010145;
-  --color-shadow-navy: #4c4c6e69;
+  --color-shadow-navy: #4c4c6e;
   --color-btn_bg-primary: #7bf37b;
+  --color-btn_bg-primary--accent: #22a422d3;
   --color-btn_bg-primary--hover: #25c525ff;
+  --color-btn-secondary--hover: #706a6a;
+  --color-btn-secondary: #a8a7a7;
+
+  --shadow-btn-secondary: 2px 3px var(--color-btn-secondary--hover);
+  --shadow-navy-glow: 2px 3px var(--color-btn_bg-primary--accent);
 }

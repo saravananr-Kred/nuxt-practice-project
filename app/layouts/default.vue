@@ -4,7 +4,6 @@
 
     <header class="app-header">
       <TopNavbar />
-      <Toast />
     </header>
     <!-- Main content -->
     <main class="app-main">

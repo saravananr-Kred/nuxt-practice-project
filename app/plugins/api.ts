@@ -24,7 +24,9 @@ export default defineNuxtPlugin((nuxtApp) => {
       }
 
       const errorMsg = response._data?.message || "Something went wrong";
-      toastStore.showError(errorMsg);
+      if (import.meta.client) {
+        toastStore.showError(errorMsg);
+      }
     },
   });
 

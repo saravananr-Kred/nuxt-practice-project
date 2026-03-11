@@ -44,8 +44,6 @@ const {
       `/api/users/${route.params.id}/task`,
     );
 
-    console.log(res, "data");
-
     return res.data;
   },
   {
@@ -56,7 +54,6 @@ const {
 const statusCounts = computed(() => {
   const counts = { Open: 0, "In Progress": 0, Completed: 0, "On Hold": 0 };
   let data = tasks.value || [];
-  console.log(data, "data");
 
   data.forEach((task: TaskData) => {
     if (counts.hasOwnProperty(task.status)) {
@@ -86,7 +83,6 @@ const chartOptions: ChartOptions<"doughnut"> = {
     legend: { display: false },
   },
 };
-console.log(pending, "pending");
 </script>
 
 <template>

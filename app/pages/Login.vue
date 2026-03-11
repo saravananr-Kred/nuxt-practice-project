@@ -51,7 +51,6 @@
         </div>
       </form>
     </div>
-    <Toast />
   </div>
 </template>
 

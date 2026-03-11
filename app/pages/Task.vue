@@ -42,7 +42,6 @@ const handleMove = async (event: DraggableEvent, newStatus: string) => {
   isLoading.value = true;
   if (event.added) {
     const movedTask = event.added.element;
-    console.log(movedTask, "data");
     try {
       await $api(`/api/tasks/status/${movedTask.id}`, {
         method: "put",
@@ -215,7 +214,6 @@ function handleDeleteTask(id: number) {
     <!-- Add/Edit Modal -->
     <AddTask v-model="openModal" @refresh-task="refresh" />
 
-    <Toast />
     <!-- Task Detail Panel -->
     <TaskDetailPanel
       :isOpen="showDetailPanel"
@@ -249,7 +247,8 @@ function handleDeleteTask(id: number) {
 .kanban-column {
   background: #f3f4f6;
   border-radius: 12px;
-  min-height: 300px;
+  height: 400px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   border: 2px dashed #c5c7c9;

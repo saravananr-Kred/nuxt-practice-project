@@ -315,8 +315,6 @@
         </form>
       </div>
     </div>
-
-    <Toast />
   </div>
 </template>
 

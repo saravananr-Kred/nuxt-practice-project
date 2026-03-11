@@ -137,4 +137,10 @@ export interface SelectProps {
   density?: "default" | "comfortable" | "compact";
 }
 
+export type SearchUserResponse = {
+  id: number;
+  name: string;
+  type: string;
+};
+
 // =========== Custom component end =================== //

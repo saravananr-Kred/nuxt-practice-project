@@ -41,7 +41,9 @@ const emit = defineEmits<{ (e: "close"): void }>();
               <main class="p-4">
                 <slot></slot>
               </main>
-              <footer class="mt-4 border-t p-4">
+              <footer
+                class="mt-4 border-t p-4 flex items-center justify-end gap-x-3"
+              >
                 <slot name="footer"></slot>
               </footer>
             </div>
