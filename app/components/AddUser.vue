@@ -65,12 +65,20 @@
             label="Account Role"
             layout="form"
           />
-          <Input
+          <!-- <Input
             v-model="dob"
             v-bind="dobProps"
             :error="errors.dob"
             label="Date of Birth"
             type="date"
+            layout="form"
+          /> -->
+          <Datepicker
+            v-model="dob"
+            v-bind="dobProps"
+            :errorMessage="errors.dob"
+            label="Date of Birth"
+            height="36px"
             layout="form"
           />
         </div>
@@ -103,7 +111,12 @@
           @click="openAddUser(false)"
           >Cancel</Button
         >
-        <Button type="submit" form="addUserForm" :disabled="loadingUsers">
+        <Button
+          type="submit"
+          class="flex items-center"
+          form="addUserForm"
+          :disabled="loadingUsers"
+        >
           <Spinner :loading="loadingUsers" class="mr-2" />
           {{ id === 0 ? "Create User" : "Save Changes" }}
         </Button>
@@ -221,6 +234,7 @@ configure({
 function openAddUser(value: boolean) {
   resetForm();
   clearImage();
+  id.value = 0;
   open.value = value;
 }
 
@@ -257,6 +271,8 @@ const addUser = handleSubmit(async (values: any) => {
     open.value = false;
   } catch (error) {
     console.error("Submission failed:", error);
+  } finally {
+    id.value = 0;
   }
 });
 

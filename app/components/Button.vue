@@ -13,7 +13,7 @@ interface props {
 const props = withDefaults(defineProps<props>(), {
   label: "Submit",
   colorClasses:
-    "bg-btn_bg-primary transition delay-200 ease-in-out text-navy-text hover:shadow-[2px_6px_6px_-2px_#4c4c6e69] ",
+    "bg-btn_bg-primary transition delay-200 ease-in text-navy-text hover:shadow-[2px_6px_6px_-2px_#4c4c6e69] ",
   paddingClasses: "px-4 py-2",
   radiusClasses: "rounded-lg",
   additionalClasses: "",

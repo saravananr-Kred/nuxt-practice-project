@@ -124,6 +124,17 @@ export interface SelectProps {
   options: Option[];
   error?: string | string[];
   layout?: string;
+  placeholder?: string;
+  height?: string;
+  variant?:
+    | "outlined"
+    | "filled"
+    | "plain"
+    | "solo"
+    | "solo-filled"
+    | "solo-inverted"
+    | "underlined";
+  density?: "default" | "comfortable" | "compact";
 }
 
 // =========== Custom component end =================== //

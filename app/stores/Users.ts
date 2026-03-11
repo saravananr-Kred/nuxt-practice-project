@@ -14,6 +14,16 @@ export const useUsersStore = defineStore("User", () => {
 
   // ============= Actions ============= //
 
+  const handleError = (error: any) => {
+    console.log(error, "error");
+    const msg =
+      error?.data?.message ||
+      error?.message ||
+      error?.statusMessage ||
+      "An unexpected error occurred";
+    showError(msg);
+  };
+
   // Fetch single user
   const fetchSingleUser = async (id: number) => {
     loadingUsers.value = true;
@@ -27,8 +37,7 @@ export const useUsersStore = defineStore("User", () => {
 
       singleUser.value = response;
     } catch (error) {
-      console.error((error as Error)?.message || "something went wrong");
-      showError((error as Error)?.message || "something went wrong");
+      handleError(error);
     } finally {
       loadingUsers.value = false;
     }
@@ -46,11 +55,10 @@ export const useUsersStore = defineStore("User", () => {
       if (response?.message?.includes("User created successfully")) {
         showSuccess("User added successfully!");
       } else {
-        showError("User not added!");
+        handleError("User not added!");
       }
     } catch (error) {
-      console.error((error as Error)?.message || "something went wrong");
-      showError((error as Error)?.message || "something went wrong");
+      handleError(error);
     } finally {
       loadingUsers.value = false;
     }
@@ -67,8 +75,7 @@ export const useUsersStore = defineStore("User", () => {
 
       showSuccess("User updated successfully!");
     } catch (error) {
-      console.error((error as Error)?.message || "something went wrong");
-      showError((error as Error)?.message || "something went wrong");
+      handleError(error);
     } finally {
       loadingUsers.value = false;
     }
@@ -84,8 +91,7 @@ export const useUsersStore = defineStore("User", () => {
 
       showSuccess("User deleted successfully!");
     } catch (error) {
-      console.error((error as Error).message);
-      showError((error as Error).message);
+      handleError(error);
     } finally {
       loadingUsers.value = false;
     }

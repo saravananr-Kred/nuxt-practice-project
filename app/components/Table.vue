@@ -139,7 +139,7 @@
                 >
                   <button
                     v-if="can('edit-user')"
-                    @click="$emit('edit-user', row.id)"
+                    @click="$emit('edit-user', row.user_id)"
                     class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
                     title="Edit User"
                   >
@@ -147,7 +147,7 @@
                   </button>
                   <button
                     v-if="can('delete-user')"
-                    @click="$emit('delete-user', row.id)"
+                    @click="$emit('delete-user', row.user_id)"
                     class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                     title="Delete User"
                   >

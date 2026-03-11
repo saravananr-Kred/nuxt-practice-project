@@ -23,12 +23,14 @@
           v-model="taskData.status"
           :options="statusOptions"
           label="Status"
+          placeholder="Select Status"
+          variant="outlined"
+          height="36px"
         />
-        <Input
+        <Datepicker
           v-model="taskData.end_date"
-          placeholder="End Date"
-          type="date"
           label="End Date"
+          height="36px"
         />
         <Input
           v-model="taskData.notes"
@@ -40,6 +42,9 @@
           v-model="taskData.priority"
           :options="priorityOptions"
           label="Priority"
+          placeholder="Select Priority"
+          variant="outlined"
+          height="36px"
         />
         <Autocomplete
           v-model="assignedTo"
@@ -190,6 +195,12 @@ async function submitTask() {
   const formData = new FormData();
 
   Object.entries(taskData.value).forEach(([key, value]) => {
+    if (key === "end_date") {
+      if (value !== null && value !== undefined) {
+        let data = String(value).split("T")[0] || "";
+        formData.append(key, data);
+      }
+    }
     if (value !== null && value !== undefined) {
       formData.append(key, String(value));
     }

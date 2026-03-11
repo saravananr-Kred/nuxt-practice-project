@@ -27,7 +27,6 @@ const model = defineModel<number | null>();
     <label :for="label" class="text-sm">{{ label }}</label>
     <v-autocomplete
       density="compact"
-      class="ml-4"
       :id="label"
       v-model="model"
       :items="options?.length ? options : items"
@@ -49,10 +48,50 @@ const model = defineModel<number | null>();
 .v-input__control:hover {
   box-shadow: 4px 4px 8px 1px $input-border;
 }
-input:focus {
-  outline: none;
+.v-input.v-autocomplete {
+  height: 36px !important;
 }
-.v-input {
-  height: 36px;
+:deep(.v-autocomplete .v-field) {
+  border: 1px solid $input-border;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+:deep(.v-autocomplete:hover .v-field) {
+  box-shadow: 4px 4px 8px 1px $input-border;
+}
+:deep(.v-autocomplete) {
+  --v-input-control-height: 36px;
+
+  .v-field {
+    min-height: 36px !important;
+    height: 36px !important;
+    align-items: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    .v-field__input {
+      min-height: 36px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      height: 36px !important;
+    }
+
+    .v-field__append-inner,
+    .v-field__clearable {
+      padding-top: 0;
+      align-items: center;
+      height: 36px;
+    }
+  }
+}
+
+:deep(.v-autocomplete.v-input .v-field__input) {
+  display: flex;
+  align-items: center;
+}
+
+:deep(.v-autocomplete .v-field__outline) {
+  color: $input-border !important;
 }
 </style>

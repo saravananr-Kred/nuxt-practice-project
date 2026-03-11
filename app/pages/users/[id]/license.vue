@@ -89,6 +89,15 @@ const resetLicense = () => {
   ];
 };
 
+const toYMD = (date: any) => {
+  if (!date) return "";
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const validateLicense = () => {
   const toSave: License[] = [];
 
@@ -132,6 +141,7 @@ const addLicense = () => {
 };
 
 const removeLicense = (data: License, index: number) => {
+  console.log(data, "data");
   if (data.id !== 0) {
     deleteDialog.value = true;
     selectedLicense.value = data;
@@ -184,8 +194,8 @@ const saveLicenses = async () => {
       toastStore.showSuccess("Licenses inserted successfully");
       await refresh(); // Refresh data
     }
-  } catch (e) {
-    toastStore.showError("Update failed");
+  } catch (e: any) {
+    toastStore.showError(e?.data?.message || e?.message || "Update failed");
   } finally {
     isSaving.value = false;
   }
@@ -346,6 +356,7 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
                 <v-select
                   v-model="license.state"
                   :items="states"
+                  persistent-placeholder
                   placeholder="Select State"
                   variant="outlined"
                   density="comfortable"
@@ -372,6 +383,7 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
                   :disabled="!license.state"
                   placeholder="Select City"
                   variant="outlined"
+                  persistent-placeholder
                   density="comfortable"
                   hide-details
                   :menu-props="{ contentClass: 'custom-dropdown-menu' }"
@@ -404,6 +416,8 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
                       :model-value="formatDate(license.startDate)"
                       v-bind="props"
                       readonly
+                      persistent-placeholder
+                      placeholder="Select start date"
                       format="dd-MM-yyyy"
                       variant="outlined"
                       density="comfortable"
@@ -422,7 +436,12 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
                     v-model="license.startDate"
                     color="#7bf37b"
                     elevation="10"
-                    @update:model-value="activeMenu1 = null"
+                    @update:model-value="
+                      (val) => {
+                        license.startDate = toYMD(val);
+                        activeMenu1 = null;
+                      }
+                    "
                   ></v-date-picker>
                 </v-menu>
               </div>
@@ -452,6 +471,8 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
                       :model-value="formatDate(license.endDate)"
                       v-bind="props"
                       readonly
+                      persistent-placeholder
+                      placeholder="Select end date"
                       format="dd-MM-yyyy"
                       variant="outlined"
                       density="comfortable"
@@ -470,7 +491,12 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
                     v-model="license.endDate"
                     color="#7bf37b"
                     elevation="10"
-                    @update:model-value="activeMenu2 = null"
+                    @update:model-value="
+                      (val) => {
+                        activeMenu2 = null;
+                        license.endDate = toYMD(val);
+                      }
+                    "
                   ></v-date-picker>
                 </v-menu>
               </div>
@@ -493,7 +519,7 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
             Unsaved Changes
           </p>
           <p class="text-white text-sm font-medium">
-            {{ licenses.length }} Total Records
+            {{ licenses.filter((x) => !x.isSaved).length }} Total Records
           </p>
         </div>
         <button
@@ -507,7 +533,10 @@ const { pending, error, refresh } = useAsyncData("licenses", () =>
         </button>
       </div>
     </div>
+    <Toast />
+
     <ConfirmDelete
+      v-model="deleteDialog"
       @confirm-delete="confirmDelete"
       @cancel-delete="cancelDelete"
     />

@@ -1,29 +1,20 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import type { SelectProps } from "@/Types/Data.ts";
 
 const props = withDefaults(defineProps<SelectProps>(), {
   layout: "default",
+  placeholder: "Select a value",
+  variant: "outlined",
+  density: "default",
+  height: "36px",
 });
 
-const selectRef = ref<HTMLDivElement | null>(null);
-
+const emits = defineEmits(["handle-update"]);
 const model = defineModel<string | number>(); // v-model
 
-const isOpen = ref(false);
-
-function toggle() {
-  isOpen.value = !isOpen.value;
+function handleStateChange() {
+  emits("handle-update", model.value);
 }
-
-function selectOption(option: Option) {
-  model.value = option.value;
-  isOpen.value = false;
-}
-
-onClickOutside(selectRef, () => {
-  isOpen.value = false;
-});
 </script>
 
 <template>
@@ -39,55 +30,84 @@ onClickOutside(selectRef, () => {
     <label
       v-if="label"
       v-show="layout !== 'auth'"
-      class="block mb-1 font-medium text-sm"
+      class="block font-medium text-sm"
     >
       {{ label }}
     </label>
 
     <!-- Selected Display -->
-    <div
-      :class="[
-        {
-          'ml-4': layout === 'default',
-          'mt-1': layout === 'form',
-        },
-        'border rounded-md h-9 custom_select p-2 cursor-pointer bg-white flex justify-between items-center',
-      ]"
-      @click="toggle"
+    <v-select
+      v-model="model"
+      :items="options"
+      item-title="label"
+      item-value="value"
+      :placeholder="placeholder"
+      :variant="variant"
+      :density="density"
+      hide-details
+      :style="{ '--v-select-height': height }"
+      @update:model-value="handleStateChange()"
+      :menu-props="{ contentClass: 'custom-dropdown-menu' }"
+      class="custom-v-select"
+    ></v-select>
+    <span v-if="error && !model" class="text-red-500 text-xs"
+      >Please select state</span
     >
-      <span>
-        {{ options.find((o) => o.value === model)?.label || "Select option" }}
-      </span>
-      <span>▼</span>
-    </div>
-    <div></div>
-    <p class="text-red-500 ml-4 font-medium text-sm">{{ error }}</p>
-    <!-- Dropdown -->
-    <div
-      v-if="isOpen"
-      class="absolute left-0 right-0 mt-1 border rounded-md bg-white shadow-md z-10"
-      ref="selectRef"
-    >
-      <div
-        v-for="option in options"
-        :key="option.value"
-        class="p-2 hover:bg-gray-100 rounded-md cursor-pointer"
-        @click="selectOption(option)"
-      >
-        {{ option.label }}
-      </div>
-    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.custom_select {
-  border: 1px solid $input-border;
+:deep(.custom-v-select .v-field) {
+  border-radius: 8px !important;
+  font-size: 14px;
+  color: #010145;
+  transition: all 0.2s ease;
 }
-.custom_select:hover {
+
+:deep(.custom-v-select:hover .v-field) {
   box-shadow: 4px 4px 8px 1px $input-border;
 }
-.custom_select:focus {
-  outline: none;
+
+:deep(.custom-v-select .v-outline__separator),
+:deep(.custom-v-select .v-field__outline) {
+  --v-field-border-opacity: 1;
+  color: #c0e5c9 !important;
+}
+:deep(.custom-v-select .v-field--error .v-outline__separator),
+:deep(.custom-v-select .v-field--error .v-field__outline) {
+  --v-field-border-opacity: 1;
+  color: red !important;
+}
+:deep(.custom-v-select .v-field--focused) {
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 4px rgba(123, 243, 123, 0.15);
+}
+:deep(.custom-v-select .v-field--focused .v-field__outline) {
+  color: $input-border !important;
+}
+
+/* Dropdown (Options) Styling */
+:deep(.custom-dropdown-menu) {
+  background-color: #ffffff !important;
+  border-radius: 12px !important;
+  border: 1px solid #c0e5c9 !important;
+  margin-top: 8px;
+}
+
+:deep(.custom-dropdown-menu .v-list-item--active) {
+  background-color: #f5f5f5 !important;
+  color: #010145 !important;
+}
+:deep(.custom-v-select .v-field),
+:deep(.custom-v-select .v-field__field) {
+  height: var(--v-select-height);
+  min-height: var(--v-select-height);
+}
+
+:deep(.custom-v-select .v-field__input) {
+  min-height: var(--v-select-height);
+  display: flex;
+  align-items: center;
+  padding: 4px 4px 4px 12px;
 }
 </style>

@@ -19,6 +19,16 @@ export const useTasksStore = defineStore("Task", () => {
       ?.sort((a, b) => Number(a.id) - Number(b.id));
   });
 
+  const handleError = (error: any) => {
+    console.log(error, "error");
+    const msg =
+      error?.data?.message ||
+      error?.message ||
+      error?.statusMessage ||
+      "An unexpected error occurred";
+    showError(msg);
+  };
+
   // Group tasks by status for Kanban columns
   const tasksByStatus = computed(() => {
     const grouped = {
@@ -67,14 +77,9 @@ export const useTasksStore = defineStore("Task", () => {
         body: taskData,
       });
 
-      if (response?.message?.includes("successfully")) {
-        showSuccess("Task added successfully!");
-      } else {
-        throw new Error(response?.message);
-      }
+      showSuccess("Task added successfully!");
     } catch (error) {
-      console.error((error as Error).message);
-      showError((error as Error).message);
+      handleError(error);
     } finally {
       loadingTasks.value = false;
     }
@@ -91,8 +96,7 @@ export const useTasksStore = defineStore("Task", () => {
 
       showSuccess("Task updated successfully!");
     } catch (error) {
-      console.error((error as Error).message);
-      showError((error as Error).message);
+      handleError(error);
     } finally {
       loadingTasks.value = false;
     }
@@ -108,8 +112,7 @@ export const useTasksStore = defineStore("Task", () => {
 
       showSuccess("Task deleted successfully!");
     } catch (error) {
-      console.error((error as Error).message);
-      showError((error as Error).message);
+      handleError(error);
     } finally {
       loadingTasks.value = false;
     }

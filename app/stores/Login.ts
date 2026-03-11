@@ -23,8 +23,12 @@ export const useLoginStore = defineStore("login", () => {
   const isLoggedIn = computed(() => !!token.value);
 
   const handleError = (error: any) => {
+    console.log(error, "error");
     const msg =
-      error?.message || error?.statusMessage || "An unexpected error occurred";
+      error?.data?.message ||
+      error?.message ||
+      error?.statusMessage ||
+      "An unexpected error occurred";
     showError(msg);
   };
 
@@ -45,6 +49,7 @@ export const useLoginStore = defineStore("login", () => {
       });
 
       setToken(data.access_token);
+      showSuccess("Logged in successfully!");
       token.value = data.access_token;
       user.value = data.user;
       await navigateTo("/");

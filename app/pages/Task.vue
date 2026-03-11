@@ -215,6 +215,7 @@ function handleDeleteTask(id: number) {
     <!-- Add/Edit Modal -->
     <AddTask v-model="openModal" @refresh-task="refresh" />
 
+    <Toast />
     <!-- Task Detail Panel -->
     <TaskDetailPanel
       :isOpen="showDetailPanel"

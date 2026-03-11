@@ -14,7 +14,13 @@ const navLinks = computed(() => [
   {
     name: "License",
     path: `/users/${userId.value}/license`,
-    icon: Icons.Document,
+    icon: Icons.License,
+    isEmoji: false,
+  },
+  {
+    name: "Task Report",
+    path: `/users/${userId.value}/TaskChart`,
+    icon: Icons.barChart,
     isEmoji: false,
   },
 ]);
@@ -93,9 +99,5 @@ const navLinks = computed(() => [
 nav a:not(.active-link):hover {
   background-color: #fafafa;
   color: #04a004;
-}
-
-.active-link .icon-filter {
-  filter: brightness(0) invert(1);
 }
 </style>

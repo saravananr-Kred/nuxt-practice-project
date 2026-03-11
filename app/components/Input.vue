@@ -41,79 +41,22 @@ let errorArray = computed(() => {
 
 <template>
   <div
-    v-if="layout === 'default'"
-    class="w-full grid-cols-[1fr_2fr] grid items-center"
+    :class="[
+      { 'grid-cols-[1fr] w-full grid items-center': layout === 'form' },
+      { 'grid-cols-[1fr_2fr] w-full grid items-center': layout === 'default' },
+    ]"
   >
-    <label for="input-field" class="text-sm">{{ label }}</label>
+    <label
+      v-show="['default', 'form'].includes(layout)"
+      for="input-field"
+      class="text-sm"
+      >{{ label }}</label
+    >
     <div class="relative flex items-center">
       <input
         :id="label"
         :type="inputType"
-        class="rounded-md h-9 p-[4px] pr-10 text-sm w-full"
-        v-model="value"
-        v-bind="$attrs"
-      />
-
-      <button
-        v-if="isPasswordField"
-        type="button"
-        @click="showPassword = !showPassword"
-        class="absolute right-3 text-gray-500 hover:text-indigo-600 focus:outline-none"
-      >
-        <span v-if="showPassword">👁️</span> <span v-else>👁️‍🗨️</span>
-      </button>
-    </div>
-    <div></div>
-    <div v-if="errorArray.length > 0" class="ml-4 grow">
-      <p
-        v-for="(msg, ind) in errorArray"
-        :key="ind"
-        class="text-red-500 mt-1 text-xs font-medium"
-      >
-        {{ msg }}
-      </p>
-    </div>
-  </div>
-  <div
-    v-else-if="layout === 'form'"
-    class="w-full grid-cols-[1fr] grid items-center"
-  >
-    <label for="input-field" class="text-sm">{{ label }}</label>
-    <div class="relative flex items-center">
-      <input
-        :id="label"
-        :type="inputType"
-        class="rounded-md h-9 p-[4px] pr-10 text-sm w-full"
-        v-model="value"
-        v-bind="$attrs"
-      />
-
-      <button
-        v-if="isPasswordField"
-        type="button"
-        @click="showPassword = !showPassword"
-        class="absolute right-3 text-gray-500 hover:text-indigo-600 focus:outline-none"
-      >
-        <span v-if="showPassword">👁️</span> <span v-else>👁️‍🗨️</span>
-      </button>
-    </div>
-    <div></div>
-    <div v-if="errorArray.length > 0" class="grow">
-      <p
-        v-for="(msg, ind) in errorArray"
-        :key="ind"
-        class="text-red-500 mt-1 text-xs font-medium"
-      >
-        {{ msg }}
-      </p>
-    </div>
-  </div>
-  <div v-else>
-    <div class="relative flex items-center">
-      <input
-        :id="label"
-        :type="inputType"
-        class="rounded-md h-9 p-[4px] pr-10 text-sm w-full"
+        class="rounded-lg h-9 p-[4px] text-sm w-full"
         v-model="value"
         v-bind="$attrs"
       />
@@ -133,7 +76,8 @@ let errorArray = computed(() => {
         <span v-else>👁️‍🗨️</span>
       </button>
     </div>
-    <div v-if="errorArray.length > 0" class="grow">
+    <div></div>
+    <div v-if="errorArray.length > 0" class="ml-4 grow">
       <p
         v-for="(msg, ind) in errorArray"
         :key="ind"
@@ -148,11 +92,16 @@ let errorArray = computed(() => {
 <style scoped lang="scss">
 input {
   border: 1px solid $input-border;
+  padding-left: 12px;
+  font-size: 14px;
 }
 input:focus {
   outline: none;
 }
 input:hover {
   box-shadow: 4px 4px 8px 1px $input-border;
+}
+input::placeholder {
+  font-size: 14px;
 }
 </style>
