@@ -13,17 +13,22 @@ definePageMeta({
 const schema = yup.object({
   name: yup.string().required("Name is required"),
   email: yup.string().email().required("Email is required"),
-  age: yup
-    .number()
-    .required("Age is required")
-    .positive("Age must be positive number")
-    .integer("Age must be integer"),
+  street: yup.string().required("Street is required"),
+  city: yup.string().required("City is required"),
+  state: yup.string().required("State is required"),
+  pincode: yup
+    .string()
+    .required("Pincode is required")
+    .matches(/^[0-9]+$/, "Pincode must only contain digits")
+    .min(6, "Pincode must be at least 6 digits")
+    .max(6, "Pincode must be at most 6 digits"),
   gender: yup.string().required("Gender is required"),
   phone: yup
     .string()
     .required("Phone is required")
     .matches(/^[0-9]+$/, "Phone must only contain digits")
-    .min(10, "Phone must be at least 10 digits"),
+    .min(10, "Phone must be at least 10 digits")
+    .max(10, "Phone must be at most 10 digits"),
   dob: yup.string().required("DOB is required"),
   role: yup
     .number()
@@ -66,7 +71,10 @@ const { handleSubmit, errors, resetForm, defineField } = useForm({
     name: "",
     password: "",
     confirmPassword: "",
-    age: 0,
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
     gender: "",
     phone: "",
     email: "",
@@ -78,7 +86,10 @@ const { handleSubmit, errors, resetForm, defineField } = useForm({
 // Define each field to get its 'touched' status
 const [name, nameProps] = defineField("name");
 const [email, emailProps] = defineField("email");
-const [age, ageProps] = defineField("age");
+const [street, streetProps] = defineField("street");
+const [city, cityProps] = defineField("city");
+const [state, stateProps] = defineField("state");
+const [pincode, pincodeProps] = defineField("pincode");
 const [gender, genderProps] = defineField("gender");
 const [phone, phoneProps] = defineField("phone");
 const [dob, dobProps] = defineField("dob");
@@ -142,12 +153,35 @@ const handleRegister = handleSubmit(async (values: any) => {
             layout="form"
           />
           <Input
-            v-model="age"
-            v-bind="ageProps"
-            :error="errors.age"
-            placeholder="Age"
-            type="Number"
-            label="Age"
+            v-model="street"
+            v-bind="streetProps"
+            :error="errors.street"
+            placeholder="Street"
+            label="Street"
+            layout="form"
+          />
+          <Input
+            v-model="city"
+            v-bind="cityProps"
+            :error="errors.city"
+            placeholder="City"
+            label="City"
+            layout="form"
+          />
+          <Input
+            v-model="state"
+            v-bind="stateProps"
+            :error="errors.state"
+            placeholder="State"
+            label="State"
+            layout="form"
+          />
+          <Input
+            v-model="pincode"
+            v-bind="pincodeProps"
+            :error="errors.pincode"
+            placeholder="Pincode"
+            label="Pincode"
             layout="form"
           />
           <Select

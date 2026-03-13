@@ -7,6 +7,7 @@ export const useTasksStore = defineStore("Task", () => {
   const singleTask = ref<TaskData | null>(null);
   const { showSuccess } = useToastStore();
   const { $api } = useNuxtApp();
+  const taskComments = ref<CommentData[]>([]);
 
   // ============= Computed Values ============= //
 
@@ -117,6 +118,30 @@ export const useTasksStore = defineStore("Task", () => {
     }
   };
 
+  const fetchTaskComments = async (taskId: number) => {
+    try {
+      const response = await $api<{ data: CommentData[] }>(
+        `/api/tasks/${taskId}/comments`,
+      );
+      taskComments.value = response.data || [];
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  const addTaskComment = async (taskId: number, payload: CommentPayload) => {
+    try {
+      await $api(`/api/tasks/${taskId}/comments`, {
+        method: "post",
+        body: payload,
+      });
+      await fetchTaskComments(taskId);
+      showSuccess("Comment added successfully!");
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   // Return values
   return {
     tasks,
@@ -129,5 +154,8 @@ export const useTasksStore = defineStore("Task", () => {
     addTask,
     updateTask,
     deleteTask,
+    taskComments,
+    fetchTaskComments,
+    addTaskComment,
   };
 });

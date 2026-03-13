@@ -46,9 +46,9 @@ const completedTasksCount = computed(
   () => userTask.value.filter((task) => task.status === "Completed").length,
 );
 
-if (error.value && !singleUser.value) {
-  throw createError({ statusCode: 404, statusMessage: "User Not Found" });
-}
+// if (error.value && !singleUser.value) {
+//   throw createError({ statusCode: 404, statusMessage: "User Not Found" });
+// }
 </script>
 
 <template>
@@ -120,7 +120,7 @@ if (error.value && !singleUser.value) {
               <div class="h-6 w-48 bg-gray-200 rounded mb-5"></div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div
-                  v-for="i in 4"
+                  v-for="i in 6"
                   :key="i"
                   class="p-4 bg-gray-50 rounded-xl space-y-2"
                 >
@@ -241,10 +241,30 @@ if (error.value && !singleUser.value) {
                   <p
                     class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1"
                   >
-                    Age
+                    Street
                   </p>
                   <p class="font-medium text-gray-900">
-                    {{ singleUser.age ? `${singleUser.age} years old` : "-" }}
+                    {{ singleUser.street || "-" }}
+                  </p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-xl">
+                  <p
+                    class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1"
+                  >
+                    City
+                  </p>
+                  <p class="font-medium text-gray-900">
+                    {{ singleUser.city || "-" }}
+                  </p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-xl">
+                  <p
+                    class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1"
+                  >
+                    State
+                  </p>
+                  <p class="font-medium text-gray-900">
+                    {{ singleUser.state || "-" }}
                   </p>
                 </div>
                 <div class="p-4 bg-gray-50 rounded-xl">

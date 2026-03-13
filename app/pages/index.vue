@@ -3,13 +3,13 @@ import { storeToRefs } from "pinia";
 import { debounce } from "@/utils/debounce";
 
 const userStore = useUsersStore();
-const { search, users } = storeToRefs(userStore);
+const { search, filterGender, filterCity, filterState, users } = storeToRefs(userStore);
 
 const headers = ref([
   { label: "Name", key: "name" },
   { label: "Email", key: "email" },
   { label: "Phone", key: "phone" },
-  { label: "Age", key: "age" },
+  { label: "Address", key: "address" },
   { label: "DOB", key: "dob" },
   { label: "Gender", key: "gender" },
 ]);
@@ -17,7 +17,10 @@ const AddUserData = ref({
   id: "",
   firstName: "",
   lastName: "",
-  age: 0,
+  street: "",
+  city: "",
+  state: "",
+  pincode: "",
   gender: "",
   email: "",
   phone: "",
@@ -49,7 +52,7 @@ function handleSort(column: string) {
 // Fetch all users
 const cacheKey = computed(
   () =>
-    `users-${search.value}-${currentPage.value}-${perPage.value}-${sortBy.value}-${sortOrder.value}`,
+    `users-${search.value}-${filterGender.value}-${filterCity.value}-${filterState.value}-${currentPage.value}-${perPage.value}-${sortBy.value}-${sortOrder.value}`,
 );
 
 const {
@@ -71,6 +74,10 @@ const {
       : (url += "?page=" + currentPage.value + "&limit=" + perPage.value);
 
     url += "&sort_by=" + sortBy.value + "&sort_order=" + sortOrder.value;
+
+    if (filterGender.value) url += `&gender=${encodeURIComponent(filterGender.value)}`;
+    if (filterCity.value) url += `&city=${encodeURIComponent(filterCity.value)}`;
+    if (filterState.value) url += `&state=${encodeURIComponent(filterState.value)}`;
 
     const { $api } = useNuxtApp();
     try {
@@ -98,9 +105,9 @@ watch(error, (error) => {
 
 const debouncedRefresh = debounce(() => refresh(), 500);
 
-watch([search], (value) => {
-  const [search] = value;
-  if (!search || search.trim() === "") {
+watch([search, filterGender, filterCity, filterState], (value) => {
+  const [search, filterGender, filterCity, filterState] = value;
+  if (!search && !filterGender && !filterCity && !filterState) {
     refresh();
   } else {
     debouncedRefresh();
@@ -115,7 +122,10 @@ function handleOpenModal(value: boolean) {
     id: "",
     firstName: "",
     lastName: "",
-    age: 0,
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
     gender: "",
     email: "",
     phone: "",
@@ -140,7 +150,18 @@ watch(
     if (newData) {
       lastPage.value = newData.last_page ?? 1;
       totalUsers.value = newData.total ?? 0;
-      userStore.users = newData.data ?? [];
+      if (newData.data) {
+        userStore.users = newData.data.map((user: any) => {
+          const addressParts = [user.street, user.city, user.state].filter(Boolean);
+          const address = addressParts.join(", ") + (user.pincode ? ` - ${user.pincode}` : "");
+          return {
+            ...user,
+            address: address || "N/A",
+          };
+        });
+      } else {
+        userStore.users = [];
+      }
     }
   },
   { immediate: true },
@@ -151,8 +172,8 @@ watch(
   <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6">
     <h1 class="font-semibold text-2xl">Users List</h1>
     <hr class="border-1 border-[#c0e5c9] mt-2" />
-    <div class="flex items-center justify-between m-4">
-      <div class="sm:w-80">
+    <div class="flex items-center flex-wrap gap-4 m-4">
+      <div class="w-full sm:flex-1 sm:min-w-[200px]">
         <Input
           label="Search User"
           placeholder="Search users..."
@@ -161,7 +182,34 @@ watch(
         />
       </div>
 
-      <div class="mt-4 sm:mt-0 flex items-center gap-3">
+      <div class="w-full sm:w-40 xl:w-48">
+        <Select
+          label="Gender"
+          placeholder="All Genders"
+          :options="[{label: 'All', value: ''}, {label: 'Male', value: 'male'}, {label: 'Female', value: 'female'}, {label: 'Other', value: 'other'}]"
+          v-model="filterGender"
+        />
+      </div>
+
+      <div class="w-full sm:w-40 xl:w-48">
+        <Input
+          label="City"
+          placeholder="Filter by City"
+          type="text"
+          v-model="filterCity"
+        />
+      </div>
+
+      <div class="w-full sm:w-40 xl:w-48">
+        <Input
+          label="State"
+          placeholder="Filter by State"
+          type="text"
+          v-model="filterState"
+        />
+      </div>
+
+      <div class="w-full sm:w-auto mt-4 sm:mt-0 ml-auto flex items-center justify-end">
         <Button
           v-if="can('add-user')"
           @button-click="handleOpenModal(true)"

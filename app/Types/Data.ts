@@ -31,7 +31,10 @@ export type UserDetail = {
 export type AllUsersResponse = {
   id: string;
   name: string;
-  age: number;
+  street: string;
+  city: string;
+  state: string;
+  pincode: string;
   gender: string;
   email: string;
   phone: string;
@@ -52,7 +55,10 @@ export interface AllUsersDetailsData extends UserDetailsData {
 }
 
 export interface UserDetailsData {
-  age: number | null;
+  street: string | null;
+  city: string | null;
+  state: string | null;
+  pincode: string | null;
   created_at: string;
   dob: string | null;
   email: string | null;
@@ -99,6 +105,22 @@ export interface TaskFormData {
 export interface TaskApiResponse {
   data: TaskData;
   message: string;
+}
+
+export interface CommentData {
+  id: number;
+  task_id: number;
+  user_id: number;
+  user_name: string;
+  comment: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CommentPayload {
+  comment: string;
+  task_id: number;
+  user_id: number;
 }
 
 // =========== Data end =================== //

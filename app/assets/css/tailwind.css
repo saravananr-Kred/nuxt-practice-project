@@ -9,6 +9,8 @@
   --color-btn-secondary--hover: #706a6a;
   --color-btn-secondary: #a8a7a7;
 
+  --spacing-preview-height: 200px;
+
   --shadow-btn-secondary: 2px 3px var(--color-btn-secondary--hover);
   --shadow-navy-glow: 2px 3px var(--color-btn_bg-primary--accent);
 }

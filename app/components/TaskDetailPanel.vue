@@ -8,6 +8,16 @@ const props = defineProps<{
   task: TaskData | null;
 }>();
 
+const TaskStore = useTasksStore();
+const loginStore = useLoginStore();
+const { user } = storeToRefs(loginStore);
+const { taskComments } = storeToRefs(TaskStore);
+
+const commentInput = ref("");
+const loadingComment = ref(false);
+const docUrl = useRuntimeConfig().public.docUrl;
+console.log(docUrl, "docUrl");
+
 const emit = defineEmits<{
   (e: "close"): void;
   (e: "edit", id: number): void;
@@ -91,6 +101,28 @@ function handleEdit() {
 function handleDelete() {
   if (props.task) emit("delete", props.task.id);
 }
+
+async function handleAddComment() {
+  if (!props.task || !commentInput.value.trim() || loadingComment.value) return;
+  loadingComment.value = true;
+  let payload = {
+    comment: commentInput.value.trim(),
+    task_id: props.task.id,
+    user_id: user.value?.id,
+  };
+  await TaskStore.addTaskComment(props.task.id, payload);
+  commentInput.value = "";
+  loadingComment.value = false;
+}
+
+watch(
+  () => props.isOpen,
+  async (newVal) => {
+    if (newVal && props.task) {
+      await TaskStore.fetchTaskComments(props.task.id);
+    }
+  },
+);
 </script>
 
 <template>
@@ -98,7 +130,7 @@ function handleDelete() {
     <Transition name="td-overlay">
       <div v-if="isOpen" class="td-backdrop" @click.self="emit('close')">
         <Transition name="td-panel">
-          <aside v-if="isOpen && task" class="td-panel" @click.stop>
+          <div v-if="isOpen && task" class="td-panel" @click.stop>
             <!-- ── Header ─────────────────────────────────────── -->
             <header class="td-header">
               <div class="td-header-left">
@@ -139,147 +171,213 @@ function handleDelete() {
 
             <!-- ── Scrollable body ────────────────────────────── -->
             <div class="td-body">
-              <!-- Status + Priority badges -->
-              <div class="td-badges">
-                <span
-                  class="td-badge"
-                  :style="{
-                    color: statusStyle.color,
-                    background: statusStyle.bg,
-                  }"
-                >
+              <div class="td-content-left">
+                <!-- Status + Priority badges -->
+                <div class="td-badges">
                   <span
-                    class="td-badge-dot"
-                    :style="{ background: statusStyle.color }"
-                  ></span>
-                  {{ task.status }}
-                </span>
-                <span
-                  class="td-badge"
-                  :style="{
-                    color: priorityStyle.color,
-                    background: priorityStyle.bg,
-                  }"
-                >
+                    class="td-badge"
+                    :style="{
+                      color: statusStyle.color,
+                      background: statusStyle.bg,
+                    }"
+                  >
+                    <span
+                      class="td-badge-dot"
+                      :style="{ background: statusStyle.color }"
+                    ></span>
+                    {{ task.status }}
+                  </span>
                   <span
-                    class="td-badge-dot"
-                    :style="{ background: priorityStyle.color }"
-                  ></span>
-                  {{ task.priority }}
-                </span>
+                    class="td-badge"
+                    :style="{
+                      color: priorityStyle.color,
+                      background: priorityStyle.bg,
+                    }"
+                  >
+                    <span
+                      class="td-badge-dot"
+                      :style="{ background: priorityStyle.color }"
+                    ></span>
+                    {{ task.priority }}
+                  </span>
+                </div>
+
+                <!-- ── Assigned User ───────────────────────────── -->
+                <section class="td-section">
+                  <h3 class="td-section-title">Assigned To</h3>
+                  <div v-if="task.assigned_to" class="td-user">
+                    <div class="td-avatar">
+                      {{ userInitials }}
+                    </div>
+                    <span class="td-user-name">{{
+                      task.assigned_to_user_name || "User #" + task.assigned_to
+                    }}</span>
+                  </div>
+                  <p v-else class="td-empty">Not assigned</p>
+                </section>
+
+                <!-- ── Dates ─────────────────────────────────────── -->
+                <section class="td-section">
+                  <h3 class="td-section-title">Timeline</h3>
+                  <div class="td-info-grid">
+                    <div class="td-info-item">
+                      <span class="td-info-label">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          class="td-info-icon"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H8V3a1 1 0 00-1-1zM4 8h12v8H4V8z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                        Due Date
+                      </span>
+                      <span class="td-info-value">{{ formattedDate }}</span>
+                    </div>
+                    <div class="td-info-item">
+                      <span class="td-info-label">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          class="td-info-icon"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                        Created
+                      </span>
+                      <span class="td-info-value">{{
+                        formattedCreatedAt
+                      }}</span>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- ── Notes ─────────────────────────────────────── -->
+                <section v-if="task.notes" class="td-section">
+                  <h3 class="td-section-title">Notes</h3>
+                  <div class="td-notes">{{ task.notes }}</div>
+                </section>
+
+                <!-- ── Attachments ────────────────────────────────── -->
+                <section class="td-section">
+                  <h3 class="td-section-title">
+                    Attachments
+                    <span v-if="task.fileCount > 0" class="td-count-pill">{{
+                      task.fileCount
+                    }}</span>
+                  </h3>
+
+                  <div
+                    v-if="task.file_url && task.file_url.length > 0"
+                    class="td-files"
+                  >
+                    <a
+                      v-for="(url, idx) in task.file_url"
+                      :key="idx"
+                      :href="`${docUrl}${url}`"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="td-file-card"
+                      :title="getFileName(url)"
+                    >
+                      <!-- Image preview -->
+                      <template v-if="isImage(url)">
+                        <img
+                          :src="url"
+                          :alt="getFileName(url)"
+                          class="td-file-img"
+                        />
+                        <span class="td-file-name">{{ getFileName(url) }}</span>
+                      </template>
+
+                      <!-- Document preview -->
+                      <template v-else>
+                        <div class="td-file-iframe-container">
+                          <iframe
+                            :src="`${docUrl}${url}`"
+                            class="td-file-iframe"
+                            frameborder="0"
+                            loading="lazy"
+                          ></iframe>
+                          <span class="td-file-name">{{
+                            getFileName(url)
+                          }}</span>
+                        </div>
+                      </template>
+                    </a>
+                  </div>
+
+                  <p v-else class="td-empty">No attachments</p>
+                </section>
               </div>
 
-              <!-- ── Assigned User ───────────────────────────── -->
-              <section class="td-section">
-                <h3 class="td-section-title">Assigned To</h3>
-                <div v-if="task.assigned_to" class="td-user">
-                  <div class="td-avatar">
-                    {{ userInitials }}
-                  </div>
-                  <span class="td-user-name">{{
-                    task.assigned_to_user_name || "User #" + task.assigned_to
-                  }}</span>
-                </div>
-                <p v-else class="td-empty">Not assigned</p>
-              </section>
-
-              <!-- ── Dates ─────────────────────────────────────── -->
-              <section class="td-section">
-                <h3 class="td-section-title">Timeline</h3>
-                <div class="td-info-grid">
-                  <div class="td-info-item">
-                    <span class="td-info-label">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        class="td-info-icon"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H8V3a1 1 0 00-1-1zM4 8h12v8H4V8z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                      Due Date
-                    </span>
-                    <span class="td-info-value">{{ formattedDate }}</span>
-                  </div>
-                  <div class="td-info-item">
-                    <span class="td-info-label">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        class="td-info-icon"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                      Created
-                    </span>
-                    <span class="td-info-value">{{ formattedCreatedAt }}</span>
-                  </div>
-                </div>
-              </section>
-
-              <!-- ── Notes ─────────────────────────────────────── -->
-              <section v-if="task.notes" class="td-section">
-                <h3 class="td-section-title">Notes</h3>
-                <div class="td-notes">{{ task.notes }}</div>
-              </section>
-
-              <!-- ── Attachments ────────────────────────────────── -->
-              <section class="td-section">
-                <h3 class="td-section-title">
-                  Attachments
-                  <span v-if="task.fileCount > 0" class="td-count-pill">{{
-                    task.fileCount
-                  }}</span>
-                </h3>
-
-                <div
-                  v-if="task.file_url && task.file_url.length > 0"
-                  class="td-files"
-                >
-                  <a
-                    v-for="(url, idx) in task.file_url"
-                    :key="idx"
-                    :href="url"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="td-file-card"
-                    :title="getFileName(url)"
-                  >
-                    <!-- Image preview -->
-                    <template v-if="isImage(url)">
-                      <img
-                        :src="url"
-                        :alt="getFileName(url)"
-                        class="td-file-img"
-                      />
-                      <span class="td-file-name">{{ getFileName(url) }}</span>
-                    </template>
-
-                    <!-- Document preview -->
-                    <template v-else>
-                      <div class="td-file-icon-wrap">
-                        <img
-                          :src="Icons.Document"
-                          class="td-file-icon"
-                          alt="document"
-                        />
+              <!-- ── Comments Section ────────────────────────────── -->
+              <div class="td-content-right">
+                <section class="td-section td-comments-wrapper">
+                  <h3 class="td-section-title">Comments</h3>
+                  <div class="td-comments-list">
+                    <div
+                      v-if="taskComments.length === 0"
+                      class="td-empty text-center py-6"
+                    >
+                      No comments yet.
+                    </div>
+                    <div
+                      v-for="c in taskComments"
+                      :key="c.id"
+                      class="td-comment"
+                    >
+                      <div class="td-avatar td-comment-avatar">
+                        {{ c.user_name?.substring(0, 2).toUpperCase() || "U" }}
                       </div>
-                      <span class="td-file-name">{{ getFileName(url) }}</span>
-                    </template>
-                  </a>
-                </div>
+                      <div class="td-comment-body">
+                        <div class="td-comment-header">
+                          <span class="td-comment-author">{{
+                            c.user_name || "Unknown"
+                          }}</span>
+                          <span class="td-comment-date"
+                            >{{ new Date(c.created_at).toLocaleDateString() }}
+                            {{
+                              new Date(c.created_at).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            }}</span
+                          >
+                        </div>
+                        <p class="td-comment-text">{{ c.comment }}</p>
+                      </div>
+                    </div>
+                  </div>
 
-                <p v-else class="td-empty">No attachments</p>
-              </section>
+                  <div class="td-comment-input-area">
+                    <textarea
+                      v-model="commentInput"
+                      placeholder="Add a comment..."
+                      class="td-textarea"
+                      @keydown.ctrl.enter="handleAddComment"
+                    ></textarea>
+                    <div class="td-comment-actions">
+                      <Button
+                        @click="handleAddComment"
+                        :disabled="!commentInput.trim() || loadingComment"
+                      >
+                        <span v-if="loadingComment">Submitting...</span>
+                        <span v-else>Post Comment</span>
+                      </Button>
+                    </div>
+                  </div>
+                </section>
+              </div>
             </div>
 
             <!-- ── Footer actions ────────────────────────────── -->
@@ -320,8 +418,14 @@ function handleDelete() {
                 </svg>
                 Delete Task
               </button>
+              <button
+                class="bg-gray-300 text-[#2e2e2e] td-btn"
+                @click="emit('close')"
+              >
+                Close
+              </button>
             </footer>
-          </aside>
+          </div>
         </Transition>
       </div>
     </Transition>
@@ -329,6 +433,7 @@ function handleDelete() {
 </template>
 
 <style scoped lang="scss">
+@reference "../assets/css/tailwind.css";
 // ── Overlay ───────────────────────────────────────────────────────────────────
 .td-backdrop {
   position: fixed;
@@ -344,8 +449,7 @@ function handleDelete() {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 480px;
-  max-width: 100vw;
+  width: 100vw;
   background: #ffffff;
   display: flex;
   flex-direction: column;
@@ -464,11 +568,26 @@ function handleDelete() {
 // ── Body ─────────────────────────────────────────────────────────────────────
 .td-body {
   flex: 1;
+  overflow-y: hidden; /* Scroll handled manually in children if needed, or by split panes */
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+}
+
+.td-content-left {
+  flex: 1.5;
+  border-right: 1px solid #e2e8f0;
+  padding: 24px;
   overflow-y: auto;
-  padding: 20px 24px;
+}
+
+.td-content-right {
+  flex: 0.5;
+  padding: 24px;
+  background: #fafbfc;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 
 // ── Section ───────────────────────────────────────────────────────────────────
@@ -665,9 +784,102 @@ function handleDelete() {
   margin: 0;
 }
 
+// ── Comments ──────────────────────────────────────────────────────────────────
+.td-comments-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-bottom: none;
+}
+
+.td-comments-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.td-comment {
+  display: flex;
+  gap: 12px;
+}
+
+.td-comment-avatar {
+  width: 36px;
+  height: 36px;
+  font-size: 0.75rem;
+}
+
+.td-comment-body {
+  flex: 1;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.td-comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.td-comment-author {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.td-comment-date {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.td-comment-text {
+  font-size: 0.85rem;
+  color: #334155;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.td-comment-input-area {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.td-textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1);
+  }
+}
+
+.td-comment-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 // ── Footer ────────────────────────────────────────────────────────────────────
 .td-footer {
   display: flex;
+  align-items: center;
   gap: 10px;
   padding: 16px 24px;
   border-top: 1px solid #f1f5f9;
@@ -676,7 +888,7 @@ function handleDelete() {
 }
 
 .td-btn {
-  flex: 1;
+  width: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -749,5 +961,17 @@ function handleDelete() {
 .td-panel-enter-from,
 .td-panel-leave-to {
   transform: translateX(100%);
+}
+.td-file-iframe-container {
+  @apply relative w-full overflow-hidden rounded-md border border-gray-200;
+  height: var(--spacing-preview-height);
+}
+
+.td-file-iframe {
+  @apply w-full h-full pointer-events-none;
+}
+
+.td-file-card {
+  @apply flex flex-col gap-2;
 }
 </style>

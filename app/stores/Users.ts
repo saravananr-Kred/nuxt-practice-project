@@ -3,6 +3,9 @@ export const useUsersStore = defineStore("User", () => {
   const loadingUsers = ref<boolean>(false);
   const users = ref<AllUsersDetailsData[]>([]);
   const search = ref<string>("");
+  const filterGender = ref<string>("");
+  const filterCity = ref<string>("");
+  const filterState = ref<string>("");
 
   const singleUser = ref<AllUsersDetailsData | null>(null);
   const { showSuccess, showError } = useToastStore();
@@ -101,6 +104,9 @@ export const useUsersStore = defineStore("User", () => {
   return {
     users,
     search,
+    filterGender,
+    filterCity,
+    filterState,
     loadingUsers,
     AddUserApi,
     UpdateUser,

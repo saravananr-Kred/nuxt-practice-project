@@ -35,11 +35,31 @@
             layout="form"
           />
           <Input
-            v-model="age"
-            v-bind="ageProps"
-            :error="errors.age"
-            label="Age"
-            type="number"
+            v-model="street"
+            v-bind="streetProps"
+            :error="errors.street"
+            label="Street"
+            layout="form"
+          />
+          <Input
+            v-model="city"
+            v-bind="cityProps"
+            :error="errors.city"
+            label="City"
+            layout="form"
+          />
+          <Input
+            v-model="state"
+            v-bind="stateProps"
+            :error="errors.state"
+            label="State"
+            layout="form"
+          />
+          <Input
+            v-model="pincode"
+            v-bind="pincodeProps"
+            :error="errors.pincode"
+            label="Pincode"
             layout="form"
           />
           <Input
@@ -178,17 +198,22 @@ const schema = yup.object({
         .oneOf([yup.ref("password")], "Passwords must match"),
     otherwise: (schema) => schema.optional(),
   }),
-  age: yup
-    .number()
-    .required("Age is required")
-    .positive("Age must be positive number")
-    .integer("Age must be integer"),
+  street: yup.string().required("Street is required"),
+  city: yup.string().required("City is required"),
+  state: yup.string().required("State is required"),
+  pincode: yup
+    .string()
+    .required("Pincode is required")
+    .matches(/^[0-9]+$/, "Pincode must only contain digits")
+    .min(6, "Pincode must be at least 6 digits")
+    .max(6, "Pincode must be at most 6 digits"),
   gender: yup.string().required("Gender is required"),
   phone: yup
     .string()
     .required("Phone is required")
     .matches(/^[0-9]+$/, "Phone must only contain digits")
-    .min(10, "Phone must be at least 10 digits"),
+    .min(10, "Phone must be at least 10 digits")
+    .max(10, "Phone must be at most 10 digits"),
   email: yup.string().email("Enter valid email").required("Email is required"),
   dob: yup.string().required("DOB is required"),
   role: yup.number().required("Role is required"),
@@ -200,7 +225,10 @@ const { handleSubmit, resetForm, errors, setValues, defineField } = useForm({
     name: "",
     password: "",
     confirmPassword: "",
-    age: 0,
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
     gender: "",
     phone: "",
     email: "",
@@ -210,7 +238,10 @@ const { handleSubmit, resetForm, errors, setValues, defineField } = useForm({
 });
 
 const [name, nameProps] = defineField("name");
-const [age, ageProps] = defineField("age");
+const [street, streetProps] = defineField("street");
+const [city, cityProps] = defineField("city");
+const [state, stateProps] = defineField("state");
+const [pincode, pincodeProps] = defineField("pincode");
 const [gender, genderProps] = defineField("gender");
 const [phone, phoneProps] = defineField("phone");
 const [email, emailProps] = defineField("email");
@@ -286,7 +317,10 @@ watch(
       setValues({
         name: newData.name || "",
         password: "",
-        age: newData.age || 0,
+        street: newData.street || "",
+        city: newData.city || "",
+        state: newData.state || "",
+        pincode: newData.pincode || "",
         gender: newData.gender || "",
         phone: newData.phone || "",
         email: newData.email || "",
