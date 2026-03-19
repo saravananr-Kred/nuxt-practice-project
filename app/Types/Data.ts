@@ -100,6 +100,7 @@ export interface TaskFormData {
   notes: string;
   priority: string;
   assigned_to: number | null;
+  documents?: string[];
 }
 
 export interface TaskApiResponse {

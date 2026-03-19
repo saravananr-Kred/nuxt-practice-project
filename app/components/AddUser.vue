@@ -41,19 +41,36 @@
             label="Street"
             layout="form"
           />
-          <Input
+          <!-- <Input
             v-model="city"
             v-bind="cityProps"
             :error="errors.city"
             label="City"
             layout="form"
-          />
-          <Input
+          /> -->
+          <!-- <Input
             v-model="state"
             v-bind="stateProps"
             :error="errors.state"
             label="State"
             layout="form"
+          /> -->
+          <Select
+            v-model="state"
+            v-bind="stateProps"
+            :error="errors.state"
+            :options="stateOptions"
+            label="State"
+            layout="form"
+          />
+          <Select
+            v-model="city"
+            v-bind="cityProps"
+            :error="errors.city"
+            :options="cityOptions"
+            label="City"
+            layout="form"
+            :disabled="!state"
           />
           <Input
             v-model="pincode"
@@ -219,6 +236,42 @@ const schema = yup.object({
   role: yup.number().required("Role is required"),
 });
 
+const locations = {
+  California: [
+    "Los Angeles",
+    "San Diego",
+    "San Jose",
+    "San Francisco",
+    "Sacramento",
+  ],
+  Texas: ["Houston", "Dallas", "Austin", "San Antonio", "Fort Worth"],
+  Florida: ["Miami", "Orlando", "Tampa", "Jacksonville", "Tallahassee"],
+  "New York": ["New York City", "Buffalo", "Rochester", "Albany", "Syracuse"],
+  Illinois: ["Chicago", "Aurora", "Naperville", "Springfield", "Rockford"],
+  Pennsylvania: [
+    "Philadelphia",
+    "Pittsburgh",
+    "Allentown",
+    "Erie",
+    "Harrisburg",
+  ],
+  Ohio: ["Columbus", "Cleveland", "Cincinnati", "Toledo", "Akron"],
+  Georgia: ["Atlanta", "Augusta", "Savannah", "Athens", "Columbus"],
+  Washington: ["Seattle", "Spokane", "Tacoma", "Vancouver", "Olympia"],
+  Arizona: ["Phoenix", "Tucson", "Mesa", "Chandler", "Scottsdale"],
+  Colorado: ["Denver", "Colorado Springs", "Aurora", "Fort Collins", "Boulder"],
+  Michigan: ["Detroit", "Grand Rapids", "Ann Arbor", "Lansing", "Flint"],
+  Massachusetts: ["Boston", "Worcester", "Springfield", "Cambridge", "Lowell"],
+  Nevada: ["Las Vegas", "Reno", "Henderson", "North Las Vegas", "Carson City"],
+  "North Carolina": [
+    "Charlotte",
+    "Raleigh",
+    "Greensboro",
+    "Durham",
+    "Winston-Salem",
+  ],
+};
+
 const { handleSubmit, resetForm, errors, setValues, defineField } = useForm({
   validationSchema: schema,
   initialValues: {
@@ -255,6 +308,27 @@ let roleOptions = [
   { label: "User", value: 2 },
 ];
 
+const stateOptions = computed(() => {
+  return [
+    { label: "Select a state", value: "" },
+    ...Object.keys(locations).map((l: string) => ({ label: l, value: l })),
+  ];
+});
+
+const cityOptions = computed(() => {
+  return state.value
+    ? [
+        { label: "Select a city", value: "" },
+        ...locations[state.value as keyof typeof locations].map(
+          (l: string) => ({
+            label: l,
+            value: l,
+          }),
+        ),
+      ]
+    : [{ label: "Select a state first", value: "" }];
+});
+
 configure({
   validateOnBlur: true,
   validateOnChange: true,
@@ -277,23 +351,43 @@ let statusOptions = [
 
 const addUser = handleSubmit(async (values: any) => {
   try {
-    const formData = new FormData();
+    // const formData = new FormData();
 
-    Object.keys(values).forEach((key) => {
-      if (values[key] !== null && values[key] !== undefined) {
-        formData.append(key, values[key]);
-      }
-    });
+    // Object.keys(values).forEach((key) => {
+    //   if (values[key] !== null && values[key] !== undefined) {
+    //     formData.append(key, values[key]);
+    //   }
+    // });
 
     if (selectedFile.value) {
-      formData.append("profile_image", selectedFile.value);
+      try {
+        const supabase = useSupabaseClient();
+
+        const fileExt = selectedFile.value.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `images/${fileName}`;
+
+        const { error } = await supabase.storage
+          .from("images")
+          .upload(filePath, selectedFile.value);
+
+        if (error) throw error;
+
+        const { data } = supabase.storage.from("images").getPublicUrl(filePath);
+
+        values.profile_image = data.publicUrl;
+      } catch (error: any) {
+        showError(error.message);
+        return;
+      }
+    } else {
+      values.profile_image = null;
     }
 
     if (id.value === 0) {
-      await user.AddUserApi(formData);
+      await user.AddUserApi(values);
     } else {
-      formData.append("_method", "PUT");
-      await user.UpdateUser(formData, id.value);
+      await user.UpdateUser(values, id.value);
     }
 
     resetForm();

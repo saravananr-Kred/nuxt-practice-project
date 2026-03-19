@@ -34,6 +34,7 @@ export default defineNuxtConfig({
       apiBase: process.env.NUXT_PUBLIC_API_BASE,
       fileUrl: process.env.NUXT_PUBLIC_FILE_URL,
       docUrl: process.env.NUXT_PUBLIC_DOC_URL,
+      supabaseStorageUrl: process.env.SUPABASE_STORAGE_URL,
     },
   },
   imports: {
@@ -44,7 +45,13 @@ export default defineNuxtConfig({
     "pinia-plugin-persistedstate/nuxt",
     "nuxt-auth-sanctum",
     "@vueuse/nuxt",
+    "@nuxtjs/supabase",
   ],
+  supabase: {
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_KEY,
+    redirect: false,
+  },
   css: [
     "@/assets/scss/main.scss",
     "@/assets/css/tailwind.css",

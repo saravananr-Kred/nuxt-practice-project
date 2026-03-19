@@ -88,7 +88,7 @@
 
 <script lang="ts" setup>
 import { debounce } from "@/utils/debounce";
-import type { SearchUserResponse } from "@/Types/Data";
+
 type SearchUser = {
   type: string;
   id: number;
@@ -102,7 +102,9 @@ const { users } = storeToRefs(usersStore);
 const emit = defineEmits<{
   (e: "refresh-task"): void;
 }>();
-
+const props = defineProps<{
+  eventDate: string;
+}>();
 const selectedFile = ref<FileList | null>(null);
 const documentPreview = ref<string[] | null>(null);
 const { $api } = useNuxtApp();
@@ -140,13 +142,13 @@ const priorityOptions = [
 let userOptions = ref<Option[]>([]);
 
 const filePreview = (files: string[]) => {
-  if (!files) {
+  if (!files || files.length === 0) {
     documentPreview.value = null;
     return;
   }
 
   documentPreview.value = files.map((file) => {
-    return file.replace("task_documents/", "");
+    return file.replace("user-docs/", "");
   });
 };
 const assignedTo = ref<number | null>(null);
@@ -194,9 +196,9 @@ const taskData = ref<TaskFormData>({
   notes: "",
   priority: "Low",
   assigned_to: null,
+  documents: [],
 });
 
-// Keep assigned_to in sync with the string dropdown value
 watch(assignedTo, (val) => {
   taskData.value.assigned_to = val ? Number(val) : null;
 });
@@ -216,6 +218,7 @@ function resetForm() {
     notes: "",
     priority: "Low",
     assigned_to: null,
+    documents: [],
   };
   clearDocument();
 }
@@ -227,25 +230,34 @@ async function submitTask() {
     if (key === "end_date") {
       if (value !== null && value !== undefined) {
         let data = String(value).split("T")[0] || "";
-        formData.append(key, data);
+        taskData.value[key] = data;
       }
-    }
-    if (value !== null && value !== undefined) {
-      formData.append(key, String(value));
     }
   });
 
   if (selectedFile.value) {
-    Array.from(selectedFile.value).forEach((file) => {
-      formData.append("documents[]", file);
-    });
+    try {
+      const supabase = useSupabaseClient();
+      for (let file of selectedFile.value) {
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const { data, error } = await supabase.storage
+          .from("user-docs")
+          .upload(fileName, file);
+        if (error) throw error;
+        taskData.value.documents?.push(("user-docs/" + data.path) as string);
+      }
+    } catch (error) {
+      console.error("Error appending files:", error);
+    }
   }
+
+  console.log(taskData.value, "taskData");
   try {
     if (id.value === 0) {
-      await tasksStore.addTask(formData);
+      await tasksStore.addTask(taskData.value);
     } else {
-      formData.append("_method", "PUT");
-      await tasksStore.updateTask(formData, id.value);
+      await tasksStore.updateTask(taskData.value, id.value);
     }
 
     open.value = false;
@@ -297,8 +309,11 @@ watch(
         notes: newData.notes || "",
         priority: newData.priority || "Low",
         assigned_to: newData.assigned_to?.id || null,
+        documents: [],
       };
       filePreview(newData.file_url);
+    } else if (props.eventDate) {
+      taskData.value.end_date = props.eventDate;
     } else {
       resetForm();
     }

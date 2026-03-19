@@ -15,19 +15,21 @@
               <div class="flex items-center gap-2">
                 {{ header.label }}
                 <div
-                  v-show="!['phone', 'action', 'gender'].includes(header.key)"
-                  class="flex flex-col text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  :class="{ 'opacity-100': sortBy === header.key }"
+                  v-if="!['phone', 'action', 'gender'].includes(header.key)"
+                  class="flex transition-opacity duration-200"
+                  :class="[
+                    sortBy === header.key
+                      ? 'opacity-100 text-indigo-600'
+                      : 'opacity-0 group-hover:opacity-100 text-gray-400',
+                  ]"
                 >
                   <svg
-                    v-if="sortBy !== header.key || sortOrder === 'asc'"
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-3 w-3 font-semibold"
-                    :class="
-                      sortBy === header.key && sortOrder === 'asc'
-                        ? 'text-indigo-600'
-                        : 'text-gray-400'
-                    "
+                    class="h-3.5 w-3.5 transition-transform duration-200 text-indigo-600"
+                    :class="{
+                      'rotate-180':
+                        sortBy === header.key && sortOrder === 'desc',
+                    }"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -37,26 +39,6 @@
                       stroke-linejoin="round"
                       stroke-width="2"
                       d="M5 15l7-7 7 7"
-                    />
-                  </svg>
-                  <svg
-                    v-if="sortBy !== header.key || sortOrder === 'desc'"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-3 w-3"
-                    :class="
-                      sortBy === header.key && sortOrder === 'desc'
-                        ? 'text-indigo-600'
-                        : 'text-gray-400'
-                    "
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 9l-7 7-7-7"
                     />
                   </svg>
                 </div>
@@ -112,7 +94,17 @@
                   class="flex items-center justify-start gap-x-2"
                 >
                   <img
-                    v-if="row?.profile_image !== null"
+                    v-if="
+                      row?.profile_image !== null &&
+                      row?.profile_image.includes(
+                        'https://ybiwqilvsxrnsjboenek.supabase.co',
+                      )
+                    "
+                    :src="row.profile_image"
+                    class="h-8 w-8 rounded-full mr-2 object-cover"
+                  />
+                  <img
+                    v-else-if="row?.profile_image !== null"
                     :src="`${publicPath}${row.profile_image}`"
                     class="h-8 w-8 rounded-full mr-2 object-cover"
                   />

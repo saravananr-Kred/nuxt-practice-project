@@ -3,7 +3,8 @@ import { storeToRefs } from "pinia";
 import { debounce } from "@/utils/debounce";
 
 const userStore = useUsersStore();
-const { search, filterGender, filterCity, filterState, users } = storeToRefs(userStore);
+const { search, filterGender, filterCity, filterState, users } =
+  storeToRefs(userStore);
 
 const headers = ref([
   { label: "Name", key: "name" },
@@ -37,6 +38,63 @@ const perPage = ref<number>(10);
 const lastPage = ref<number>(1);
 const sortBy = ref<string>("name");
 const sortOrder = ref<"asc" | "desc">("asc");
+
+const locations = {
+  California: [
+    "Los Angeles",
+    "San Diego",
+    "San Jose",
+    "San Francisco",
+    "Sacramento",
+  ],
+  Texas: ["Houston", "Dallas", "Austin", "San Antonio", "Fort Worth"],
+  Florida: ["Miami", "Orlando", "Tampa", "Jacksonville", "Tallahassee"],
+  "New York": ["New York City", "Buffalo", "Rochester", "Albany", "Syracuse"],
+  Illinois: ["Chicago", "Aurora", "Naperville", "Springfield", "Rockford"],
+  Pennsylvania: [
+    "Philadelphia",
+    "Pittsburgh",
+    "Allentown",
+    "Erie",
+    "Harrisburg",
+  ],
+  Ohio: ["Columbus", "Cleveland", "Cincinnati", "Toledo", "Akron"],
+  Georgia: ["Atlanta", "Augusta", "Savannah", "Athens", "Columbus"],
+  Washington: ["Seattle", "Spokane", "Tacoma", "Vancouver", "Olympia"],
+  Arizona: ["Phoenix", "Tucson", "Mesa", "Chandler", "Scottsdale"],
+  Colorado: ["Denver", "Colorado Springs", "Aurora", "Fort Collins", "Boulder"],
+  Michigan: ["Detroit", "Grand Rapids", "Ann Arbor", "Lansing", "Flint"],
+  Massachusetts: ["Boston", "Worcester", "Springfield", "Cambridge", "Lowell"],
+  Nevada: ["Las Vegas", "Reno", "Henderson", "North Las Vegas", "Carson City"],
+  "North Carolina": [
+    "Charlotte",
+    "Raleigh",
+    "Greensboro",
+    "Durham",
+    "Winston-Salem",
+  ],
+};
+
+const stateOptions = computed(() => {
+  return [
+    { label: "State filter", value: "" },
+    ...Object.keys(locations).map((l: string) => ({ label: l, value: l })),
+  ];
+});
+
+const cityOptions = computed(() => {
+  return filterState.value
+    ? [
+        { label: "City filter", value: "" },
+        ...locations[filterState.value as keyof typeof locations].map(
+          (l: string) => ({
+            label: l,
+            value: l,
+          }),
+        ),
+      ]
+    : [{ label: "Select a state first", value: "" }];
+});
 
 function handleSort(column: string) {
   if (sortBy.value === column) {
@@ -75,9 +133,18 @@ const {
 
     url += "&sort_by=" + sortBy.value + "&sort_order=" + sortOrder.value;
 
-    if (filterGender.value) url += `&gender=${encodeURIComponent(filterGender.value)}`;
-    if (filterCity.value) url += `&city=${encodeURIComponent(filterCity.value)}`;
-    if (filterState.value) url += `&state=${encodeURIComponent(filterState.value)}`;
+    if (filterGender.value) {
+      url += url.includes("?") ? "&" : "?";
+      url += `gender=${encodeURIComponent(filterGender.value)}`;
+    }
+    if (filterCity.value) {
+      url += url.includes("?") ? "&" : "?";
+      url += `city=${encodeURIComponent(filterCity.value)}`;
+    }
+    if (filterState.value) {
+      url += url.includes("?") ? "&" : "?";
+      url += `state=${encodeURIComponent(filterState.value)}`;
+    }
 
     const { $api } = useNuxtApp();
     try {
@@ -152,8 +219,12 @@ watch(
       totalUsers.value = newData.total ?? 0;
       if (newData.data) {
         userStore.users = newData.data.map((user: any) => {
-          const addressParts = [user.street, user.city, user.state].filter(Boolean);
-          const address = addressParts.join(", ") + (user.pincode ? ` - ${user.pincode}` : "");
+          const addressParts = [user.street, user.city, user.state].filter(
+            Boolean,
+          );
+          const address =
+            addressParts.join(", ") +
+            (user.pincode ? ` - ${user.pincode}` : "");
           return {
             ...user,
             address: address || "N/A",
@@ -185,31 +256,39 @@ watch(
       <div class="w-full sm:w-40 xl:w-48">
         <Select
           label="Gender"
-          placeholder="All Genders"
-          :options="[{label: 'All', value: ''}, {label: 'Male', value: 'male'}, {label: 'Female', value: 'female'}, {label: 'Other', value: 'other'}]"
+          :options="[
+            { label: 'Gender Filter', value: '' },
+            { label: 'Male', value: 'male' },
+            { label: 'Female', value: 'female' },
+            { label: 'Other', value: 'other' },
+          ]"
           v-model="filterGender"
+          layout="auth"
         />
       </div>
 
       <div class="w-full sm:w-40 xl:w-48">
-        <Input
-          label="City"
-          placeholder="Filter by City"
-          type="text"
-          v-model="filterCity"
-        />
-      </div>
-
-      <div class="w-full sm:w-40 xl:w-48">
-        <Input
-          label="State"
-          placeholder="Filter by State"
-          type="text"
+        <Select
           v-model="filterState"
+          :options="stateOptions"
+          label="State"
+          layout="auth"
         />
       </div>
 
-      <div class="w-full sm:w-auto mt-4 sm:mt-0 ml-auto flex items-center justify-end">
+      <div class="w-full sm:w-40 xl:w-48">
+        <Select
+          v-model="filterCity"
+          :options="cityOptions"
+          label="City"
+          layout="auth"
+          :disabled="!filterState"
+        />
+      </div>
+
+      <div
+        class="w-full sm:w-auto mt-4 sm:mt-0 ml-auto flex items-center justify-end"
+      >
         <Button
           v-if="can('add-user')"
           @button-click="handleOpenModal(true)"

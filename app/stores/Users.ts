@@ -71,7 +71,7 @@ export const useUsersStore = defineStore("User", () => {
     loadingUsers.value = true;
     try {
       await $api("/api/user-details/" + id, {
-        method: "post",
+        method: "put",
         body: userData,
       });
 

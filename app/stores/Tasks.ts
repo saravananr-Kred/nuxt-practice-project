@@ -69,7 +69,7 @@ export const useTasksStore = defineStore("Task", () => {
   };
 
   // Add a new task
-  const addTask = async (taskData: FormData) => {
+  const addTask = async (taskData: TaskFormData) => {
     loadingTasks.value = true;
     try {
       const response = await $api<TaskApiResponse>("/api/tasks", {
@@ -86,11 +86,11 @@ export const useTasksStore = defineStore("Task", () => {
   };
 
   // Update a task
-  const updateTask = async (taskData: FormData, id: number) => {
+  const updateTask = async (taskData: TaskFormData, id: number) => {
     loadingTasks.value = true;
     try {
       await $api("/api/tasks/" + id, {
-        method: "post",
+        method: "put",
         body: taskData,
       });
 
@@ -120,10 +120,10 @@ export const useTasksStore = defineStore("Task", () => {
 
   const fetchTaskComments = async (taskId: number) => {
     try {
-      const response = await $api<{ data: CommentData[] }>(
+      const response = await $api<CommentData[]>(
         `/api/tasks/${taskId}/comments`,
       );
-      taskComments.value = response.data || [];
+      taskComments.value = response || [];
     } catch (error) {
       handleError(error);
     }

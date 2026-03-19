@@ -12,11 +12,12 @@ const TaskStore = useTasksStore();
 const loginStore = useLoginStore();
 const { user } = storeToRefs(loginStore);
 const { taskComments } = storeToRefs(TaskStore);
+console.log(taskComments.value, "taskComments");
 
 const commentInput = ref("");
 const loadingComment = ref(false);
 const docUrl = useRuntimeConfig().public.docUrl;
-console.log(docUrl, "docUrl");
+const supabaseUrl = useRuntimeConfig().public.supabaseStorageUrl;
 
 const emit = defineEmits<{
   (e: "close"): void;
@@ -283,7 +284,7 @@ watch(
                     <a
                       v-for="(url, idx) in task.file_url"
                       :key="idx"
-                      :href="`${docUrl}${url}`"
+                      :href="`${supabaseUrl}${url}`"
                       target="_blank"
                       rel="noopener noreferrer"
                       class="td-file-card"
@@ -292,7 +293,7 @@ watch(
                       <!-- Image preview -->
                       <template v-if="isImage(url)">
                         <img
-                          :src="url"
+                          :src="`${supabaseUrl}${url}`"
                           :alt="getFileName(url)"
                           class="td-file-img"
                         />
@@ -300,10 +301,10 @@ watch(
                       </template>
 
                       <!-- Document preview -->
-                      <template v-else>
+                      <template v-else-if="url.includes('user-docs/')">
                         <div class="td-file-iframe-container">
                           <iframe
-                            :src="`${docUrl}${url}`"
+                            :src="`${supabaseUrl}${url}`"
                             class="td-file-iframe"
                             frameborder="0"
                             loading="lazy"
@@ -714,7 +715,7 @@ watch(
 // ── Files ─────────────────────────────────────────────────────────────────────
 .td-files {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 
@@ -968,7 +969,7 @@ watch(
 }
 
 .td-file-iframe {
-  @apply w-full h-full pointer-events-none;
+  @apply w-full h-full;
 }
 
 .td-file-card {

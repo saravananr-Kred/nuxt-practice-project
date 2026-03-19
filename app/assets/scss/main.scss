@@ -63,3 +63,7 @@ main {
   transform: translateX(100%);
   opacity: 0;
 }
+.fc-icon::before,
+.fc-icon::after {
+  display: flex;
+}

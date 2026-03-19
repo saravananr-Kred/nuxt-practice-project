@@ -303,7 +303,7 @@ const completedTasksCount = computed(
 
               <div
                 v-if="userTask.length > 0"
-                class="grid grid-cols-2 border-1 border-gray-600 border-dashed rounded-2xl p-4 gap-4"
+                class="grid grid-cols-2 border-1 border-gray-600 border-dashed rounded-2xl p-4 gap-4 max-h-72 overflow-y-auto"
               >
                 <TaskKanbanCard
                   v-for="task in userTask"

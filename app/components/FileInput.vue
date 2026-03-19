@@ -74,7 +74,7 @@ function getFileNames() {
         </div>
 
         <p class="text-xs text-center text-gray-600 break-all line-clamp-2">
-          {{ file }}
+          {{ file.split("/").pop() }}
         </p>
       </div>
 
@@ -92,7 +92,7 @@ function getFileNames() {
       <label for="fileUpload" class="cursor-pointer">
         <div class="bg-indigo-50 p-3 rounded-full inline-block mb-2">
           <Camera v-if="type === 'image'" />
-          <img :src="Icons.License" class="h-6 w-6" v-else />
+          <img :src="Icons.Document" class="h-6 w-6" v-else />
         </div>
 
         <p class="text-xs text-gray-500">

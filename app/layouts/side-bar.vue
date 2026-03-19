@@ -8,20 +8,22 @@ const navLinks = computed(() => [
   {
     name: "Dashboard",
     path: `/users/${userId.value}`,
-    icon: "📊",
-    isEmoji: true,
+    icon: Icons.dashboard,
+  },
+  {
+    name: "Calendar",
+    path: `/users/${userId.value}/calendar`,
+    icon: Icons.calendar,
+  },
+  {
+    name: "Task Report",
+    path: `/users/${userId.value}/TaskChart`,
+    icon: Icons.taskReport,
   },
   {
     name: "License",
     path: `/users/${userId.value}/license`,
     icon: Icons.License,
-    isEmoji: false,
-  },
-  {
-    name: "Task Report",
-    path: `/users/${userId.value}/TaskChart`,
-    icon: Icons.barChart,
-    isEmoji: false,
   },
 ]);
 </script>
@@ -58,15 +60,10 @@ const navLinks = computed(() => [
             <div
               class="flex items-center justify-center w-8 h-8 transition-transform group-hover:scale-110"
             >
-              <template v-if="link.isEmoji">
-                <span class="text-xl">{{ link.icon }}</span>
-              </template>
-              <template v-else>
-                <img
-                  :src="link.icon"
-                  class="h-6 w-6 object-contain icon-filter"
-                />
-              </template>
+              <img
+                :src="link.icon"
+                class="h-6 w-6 object-contain icon-filter"
+              />
             </div>
 
             <span class="tracking-wide">{{ link.name }}</span>
