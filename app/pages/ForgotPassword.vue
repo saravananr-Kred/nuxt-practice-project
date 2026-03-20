@@ -328,6 +328,8 @@ definePageMeta({
   public: true,
 });
 
+useSeo("Forgot Password", "Reset your password using email and OTP");
+
 const loginStore = useLoginStore();
 const { loading } = storeToRefs(loginStore);
 const step = ref(1);

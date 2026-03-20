@@ -45,7 +45,7 @@ function getFileNames() {
     class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 p-4 rounded-xl hover:border-indigo-500 transition-colors w-full relative"
   >
     <div v-if="type === 'image' && imagePreview" class="relative group">
-      <img
+      <NuxtImg
         :src="imagePreview as string"
         class="h-24 w-24 rounded-full object-cover ring-2 ring-indigo-500"
       />
@@ -70,7 +70,7 @@ function getFileNames() {
         class="flex flex-col items-center p-3 border rounded-lg bg-gray-50 hover:bg-indigo-50 transition"
       >
         <div class="text-indigo-500 mb-2">
-          <img :src="Icons.Document" class="w-10 h-10" />
+          <NuxtImg :src="Icons.Document" class="w-10 h-10" />
         </div>
 
         <p class="text-xs text-center text-gray-600 break-all line-clamp-2">
@@ -92,7 +92,7 @@ function getFileNames() {
       <label for="fileUpload" class="cursor-pointer">
         <div class="bg-indigo-50 p-3 rounded-full inline-block mb-2">
           <Camera v-if="type === 'image'" />
-          <img :src="Icons.Document" class="h-6 w-6" v-else />
+          <NuxtImg :src="Icons.Document" class="h-6 w-6" v-else />
         </div>
 
         <p class="text-xs text-gray-500">

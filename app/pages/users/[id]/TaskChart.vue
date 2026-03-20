@@ -17,6 +17,8 @@ definePageMeta({
   layout: "side-bar",
 });
 
+useSeo("Task Chart", "Display user task status in a chart");
+
 const route = useRoute();
 
 const statusConfig = {

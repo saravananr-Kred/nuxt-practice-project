@@ -97,7 +97,7 @@ const formattedDate = computed(() => {
 
       <div class="flex items-center gap-2">
         <div class="flex gap-1 relative" v-if="task.fileCount > 0">
-          <img :src="Icons.Document" class="w-5 h-5" />
+          <NuxtImg src="/images/DocumentIcon.png" class="w-5 h-5" />
           <span
             class="absolute -top-2 -right-2 bg-red-500 rounded-full text-[10px] text-white size-4 flex items-center justify-center"
             >{{ task.fileCount }}</span

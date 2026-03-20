@@ -104,6 +104,7 @@ const emit = defineEmits<{
 }>();
 const props = defineProps<{
   eventDate: string;
+  userId?: number;
 }>();
 const selectedFile = ref<FileList | null>(null);
 const documentPreview = ref<string[] | null>(null);
@@ -312,14 +313,22 @@ watch(
         documents: [],
       };
       filePreview(newData.file_url);
-    } else if (props.eventDate) {
-      taskData.value.end_date = props.eventDate;
-    } else {
-      resetForm();
     }
   },
   { immediate: true, deep: true },
 );
+
+watch(open, (isOpen) => {
+  if (isOpen) {
+    if (!singleTask.value?.id) {
+      resetForm();
+      if (props.eventDate) taskData.value.end_date = props.eventDate;
+      if (props.userId) assignedTo.value = props.userId;
+    }
+  } else {
+    tasksStore.singleTask = null;
+  }
+});
 </script>
 
 <style></style>

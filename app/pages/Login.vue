@@ -57,6 +57,7 @@
 <script setup>
 import { useForm, configure, useField } from "vee-validate";
 import * as yup from "yup";
+useSeo("Login", "Users can Login to their account");
 
 const login = useLoginStore();
 const { loading } = storeToRefs(login);

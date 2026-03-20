@@ -291,7 +291,7 @@ watch(
                     >
                       <!-- Image preview -->
                       <template v-if="isImage(url)">
-                        <img
+                        <NuxtImg
                           :src="`${supabaseUrl}${url}`"
                           :alt="getFileName(url)"
                           class="td-file-img"

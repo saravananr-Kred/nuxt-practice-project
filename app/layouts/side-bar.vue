@@ -60,7 +60,7 @@ const navLinks = computed(() => [
             <div
               class="flex items-center justify-center w-8 h-8 transition-transform group-hover:scale-110"
             >
-              <img
+              <NuxtImg
                 :src="link.icon"
                 class="h-6 w-6 object-contain icon-filter"
               />

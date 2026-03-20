@@ -2,6 +2,7 @@
 import { useForm, configure, useField } from "vee-validate";
 import * as yup from "yup";
 
+useSeo("Register", "Users can Register to the application");
 const login = useLoginStore();
 const { loading } = storeToRefs(login);
 

@@ -3,6 +3,8 @@ definePageMeta({
   layout: "side-bar",
 });
 
+useSeo("User License", "Display and manage user license");
+
 const route = useRoute();
 const toastStore = useToastStore();
 const isSaving = ref(false);

@@ -68,7 +68,7 @@ let errorArray = computed(() => {
         class="absolute right-3 text-gray-500 hover:text-indigo-600 focus:outline-none"
       >
         <span v-if="showPassword"
-          ><img
+          ><NuxtImg
             :src="Icons.eyeClose"
             class="w-[18px] h-[18px]"
             alt="eye_closed"

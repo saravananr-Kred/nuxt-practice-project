@@ -16,8 +16,7 @@ const eventDate = ref<string>("");
 const route = useRoute();
 
 function handleOpenModal(arg: any) {
-  console.log(arg.startStr, "arg");
-  eventDate.value = arg.startStr;
+  eventDate.value = arg.dateStr; // Use dateStr for dateClick
   openModal.value = true;
 }
 
@@ -67,7 +66,7 @@ const calendarOptions = computed(() => ({
   },
   height: "auto",
   eventClick: handleEventClick,
-  select: handleOpenModal,
+  dateClick: handleOpenModal,
 
   events: tasks.value.map((task) => {
     const colors = getStatusColor(task.status);
@@ -132,12 +131,13 @@ const calendarOptions = computed(() => ({
         v-model="openModal"
         @refresh-task="refresh"
         :eventDate="eventDate"
+        :userId="Number(route.params.id)"
       />
     </div>
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 /* FullCalendar Customizations */
 :deep(.fc) {
   --fc-border-color: #e5e7eb;

@@ -6,6 +6,8 @@ const userStore = useUsersStore();
 const { search, filterGender, filterCity, filterState, users } =
   storeToRefs(userStore);
 
+useSeo("Users List", "Display Users List in a table");
+
 const headers = ref([
   { label: "Name", key: "name" },
   { label: "Email", key: "email" },
@@ -157,7 +159,15 @@ const {
     }
   },
   {
-    watch: [currentPage, perPage, sortBy, sortOrder],
+    watch: [
+      currentPage,
+      perPage,
+      sortBy,
+      sortOrder,
+      filterGender,
+      filterCity,
+      filterState,
+    ],
   },
 );
 
@@ -172,9 +182,9 @@ watch(error, (error) => {
 
 const debouncedRefresh = debounce(() => refresh(), 500);
 
-watch([search, filterGender, filterCity, filterState], (value) => {
-  const [search, filterGender, filterCity, filterState] = value;
-  if (!search && !filterGender && !filterCity && !filterState) {
+watch([search], (value) => {
+  const [search] = value;
+  if (!search) {
     refresh();
   } else {
     debouncedRefresh();
@@ -243,8 +253,8 @@ watch(
   <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6">
     <h1 class="font-semibold text-2xl">Users List</h1>
     <hr class="border-1 border-[#c0e5c9] mt-2" />
-    <div class="flex items-center flex-wrap gap-4 m-4">
-      <div class="w-full sm:flex-1 sm:min-w-[200px]">
+    <div class="flex items-center flex-wrap gap-4 my-4">
+      <div class="w-full sm:flex-1 sm:min-w-[160px]">
         <Input
           label="Search User"
           placeholder="Search users..."
@@ -286,9 +296,7 @@ watch(
         />
       </div>
 
-      <div
-        class="w-full sm:w-auto mt-4 sm:mt-0 ml-auto flex items-center justify-end"
-      >
+      <div class="w-full sm:w-auto ml-auto flex items-center justify-end">
         <Button
           v-if="can('add-user')"
           @button-click="handleOpenModal(true)"

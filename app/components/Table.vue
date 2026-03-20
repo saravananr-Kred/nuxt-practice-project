@@ -93,7 +93,7 @@
                   v-if="header.key === 'name'"
                   class="flex items-center justify-start gap-x-2"
                 >
-                  <img
+                  <NuxtImg
                     v-if="
                       row?.profile_image !== null &&
                       row?.profile_image.includes(
@@ -103,7 +103,7 @@
                     :src="row.profile_image"
                     class="h-8 w-8 rounded-full mr-2 object-cover"
                   />
-                  <img
+                  <NuxtImg
                     v-else-if="row?.profile_image !== null"
                     :src="`${publicPath}${row.profile_image}`"
                     class="h-8 w-8 rounded-full mr-2 object-cover"

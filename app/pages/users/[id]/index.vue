@@ -2,10 +2,10 @@
 import { storeToRefs } from "pinia";
 
 definePageMeta({
-  title: "User Dashboard",
-  description: "Dashboard for user details and tasks",
   layout: "side-bar",
 });
+
+useSeo("User Dashboard", "Dashboard to display user details and tasks");
 
 // Assuming you have these auto-imported or defined elsewhere
 const config = useRuntimeConfig();
@@ -156,10 +156,11 @@ const completedTasksCount = computed(
               class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center sticky top-8"
             >
               <div class="relative mb-5">
-                <img
+                <NuxtImg
                   v-if="singleUser.profile_image"
                   :src="`${publicPath}${singleUser.profile_image}`"
-                  alt="Profile photo"
+                  alt="Profile
+                photo"
                   class="w-28 h-28 rounded-full object-cover ring-4 ring-gray-50 shadow-sm"
                 />
                 <div
