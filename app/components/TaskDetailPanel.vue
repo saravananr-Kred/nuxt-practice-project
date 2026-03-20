@@ -16,7 +16,6 @@ console.log(taskComments.value, "taskComments");
 
 const commentInput = ref("");
 const loadingComment = ref(false);
-const docUrl = useRuntimeConfig().public.docUrl;
 const supabaseUrl = useRuntimeConfig().public.supabaseStorageUrl;
 
 const emit = defineEmits<{

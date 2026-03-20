@@ -365,7 +365,7 @@ const addUser = handleSubmit(async (values: any) => {
 
         const fileExt = selectedFile.value.name.split(".").pop();
         const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `images/${fileName}`;
+        const filePath = `${fileName}`;
 
         const { error } = await supabase.storage
           .from("images")

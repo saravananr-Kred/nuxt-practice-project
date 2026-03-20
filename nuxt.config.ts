@@ -33,7 +33,6 @@ export default defineNuxtConfig({
       baseUrl: process.env.NUXT_PUBLIC_BASE_URL,
       apiBase: process.env.NUXT_PUBLIC_API_BASE,
       fileUrl: process.env.NUXT_PUBLIC_FILE_URL,
-      docUrl: process.env.NUXT_PUBLIC_DOC_URL,
       supabaseStorageUrl: process.env.SUPABASE_STORAGE_URL,
     },
   },
