@@ -30,7 +30,7 @@ function handleStateChange() {
     <label
       v-if="label"
       v-show="layout !== 'auth'"
-      class="block font-medium text-sm"
+      class="block font-medium text-sm mb-2"
     >
       {{ label }}
     </label>

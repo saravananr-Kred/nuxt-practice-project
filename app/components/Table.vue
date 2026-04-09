@@ -153,7 +153,7 @@
       </table>
 
       <div
-        v-if="!tableData.length && !loading"
+        v-if="tableData && tableData.length === 0 && !loading"
         class="flex flex-col items-center justify-center py-12 px-4 text-center sm:px-6 lg:px-8"
       >
         <svg

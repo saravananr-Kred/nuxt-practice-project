@@ -12,7 +12,6 @@ const TaskStore = useTasksStore();
 const loginStore = useLoginStore();
 const { user } = storeToRefs(loginStore);
 const { taskComments } = storeToRefs(TaskStore);
-console.log(taskComments.value, "taskComments");
 
 const commentInput = ref("");
 const loadingComment = ref(false);

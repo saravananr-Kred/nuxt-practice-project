@@ -25,15 +25,13 @@ export default defineNuxtConfig({
       mode: "out-in",
     },
   },
-  // routeRules: {
-  //   "/api/user-details": { swr: 60 },
-  // },
   runtimeConfig: {
     public: {
       baseUrl: process.env.NUXT_PUBLIC_BASE_URL,
       apiBase: process.env.NUXT_PUBLIC_API_BASE,
       fileUrl: process.env.NUXT_PUBLIC_FILE_URL,
       supabaseStorageUrl: process.env.SUPABASE_STORAGE_URL,
+      ReverbAppKey: process.env.REVERB_APP_KEY,
     },
   },
   imports: {

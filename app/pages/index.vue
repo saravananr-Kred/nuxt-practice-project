@@ -40,6 +40,7 @@ const perPage = ref<number>(10);
 const lastPage = ref<number>(1);
 const sortBy = ref<string>("name");
 const sortOrder = ref<"asc" | "desc">("asc");
+const { $api, $echo } = useNuxtApp();
 
 const locations = {
   California: [
@@ -148,7 +149,6 @@ const {
       url += `state=${encodeURIComponent(filterState.value)}`;
     }
 
-    const { $api } = useNuxtApp();
     try {
       const data = await $api(url);
 
@@ -193,6 +193,19 @@ watch([search], (value) => {
 function HandleRowClick(data: number) {
   navigateTo(`/users/${data}`);
 }
+
+async function callBroadcast() {
+  await $api("/api/broadcast");
+}
+
+onMounted(() => {
+  $echo
+    .channel("date-channel")
+    .listen(".date-event", (data: { message: string }) => {
+      const toastStore = useToastStore();
+      toastStore.showSuccess(data.message);
+    });
+});
 
 function handleOpenModal(value: boolean) {
   AddUserData.value = {
@@ -304,6 +317,12 @@ watch(
         >
           <PlusIcon class="h-4 w-4" />
           Add User
+        </Button>
+        <Button
+          @button-click="callBroadcast"
+          additionalClasses="inline-flex ml-2 items-center justify-center px-4 py-2 text-sm font-semibold "
+        >
+          Test Live UI Updates
         </Button>
       </div>
     </div>

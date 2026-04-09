@@ -91,31 +91,53 @@ const ContactIcon = {
     ),
 };
 
-// const TodoIcon = {
-//   render: () =>
-//     h(
-//       "svg",
-//       {
-//         xmlns: "http://www.w3.org/2000/svg",
-//         viewBox: "0 0 20 20",
-//         fill: "currentColor",
-//         class: "nav-icon",
-//       },
-//       [
-//         h("path", {
-//           "fill-rule": "evenodd",
-//           d: "M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z",
-//           "clip-rule": "evenodd",
-//         }),
-//       ],
-//     ),
-// };
+const ActivityIcon = {
+  render: () =>
+    h(
+      "svg",
+      {
+        xmlns: "http://www.w3.org/2000/svg",
+        viewBox: "0 0 20 20",
+        fill: "currentColor",
+        class: "nav-icon",
+      },
+      [
+        h("path", {
+          "fill-rule": "evenodd",
+          d: "M10 18a8 8 0 100-16 8 8 0 000 16zm-1.828-4.996a.75.75 0 001.071-1.008l-1.5-1.5a.75.75 0 00-1.06 0l-1.5 1.5a.75.75 0 101.06 1.06l.97-.97v2.414a.75.75 0 001.5 0v-2.414l.959.958zM12.5 7h-.75v1.5a.75.75 0 01-1.5 0V7H9.5V5.5c0-.414.336-.75.75-.75h.5V4h1.5v.75h.5c.414 0 .75.336.75.75V7zm-3.5 3h1v1h-1v-1zm0 2h1v1h-1v-1zm2-2h1v1h-1v-1zm0 2h1v1h-1v-1z",
+          "clip-rule": "evenodd",
+        }),
+      ],
+    ),
+};
+
+const calendarIcon = () => {
+  return h(
+    "svg",
+    {
+      xmlns: "http://www.w3.org/2000/svg",
+      fill: "none",
+      viewBox: "0 0 24 24",
+      "stroke-width": "1.5",
+      stroke: "currentColor",
+      class: "size-6",
+    },
+    [
+      h("path", {
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        d: "M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z",
+      }),
+    ],
+  );
+};
 
 const navLinks = [
   { to: "/", label: "Users", icon: UsersIcon },
+  { to: "/calendar", label: "Calendar", icon: calendarIcon },
   { to: "/Task", label: "Tasks", icon: TaskIcon },
-  // { to: "/Todo", label: "Todo", icon: TodoIcon },
-  { to: "/Contact", label: "Contact", icon: ContactIcon },
+  { to: "/Activity", label: "Activities", icon: ActivityIcon },
+  // { to: "/Contact", label: "Contact", icon: ContactIcon },
 ];
 </script>
 

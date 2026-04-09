@@ -8,12 +8,12 @@ import interactionPlugin from "@fullcalendar/interaction";
 definePageMeta({
   title: "User Calendar",
   description: "Calendar view of user tasks",
-  layout: "side-bar",
 });
 const tasksStore = useTasksStore();
 const openModal = ref<boolean>(false);
 const eventDate = ref<string>("");
-const route = useRoute();
+const userId = ref<number>(1);
+const AllUsers = ref<any[]>([]);
 
 function handleOpenModal(arg: any) {
   eventDate.value = arg.dateStr; // Use dateStr for dateClick
@@ -22,16 +22,25 @@ function handleOpenModal(arg: any) {
 
 // Fetch tasks
 const { data, pending, refresh } = await useAsyncData(
-  `user-tasks-${route.params.id}`,
+  `user-tasks-${userId.value}`,
   async () => {
     const { $api } = useNuxtApp();
     const response = await $api<{ data: any[] }>(
-      `/api/users/${route.params.id}/task`,
+      `/api/users/${userId.value}/task`,
     );
     return response.data;
   },
-  { lazy: true },
+  { lazy: true, watch: [userId] },
 );
+
+onMounted(async () => {
+  const { $api } = useNuxtApp();
+  const usersResponse = await $api<any[]>(`/api/user-details?limit=all`);
+  AllUsers.value = usersResponse;
+  if (AllUsers.value.length > 0) {
+    userId.value = AllUsers.value[0].user_id;
+  }
+});
 
 const handleEventClick = async (arg: any) => {
   const taskId = Number(arg.event.id);
@@ -56,6 +65,15 @@ const getStatusColor = (status: string) => {
   }
 };
 
+const userOptions = computed(() => {
+  return (
+    AllUsers.value?.map((user: any) => ({
+      label: user.name,
+      value: user.user_id,
+    })) ?? [{ label: "No users found", value: 0 }]
+  );
+});
+
 const calendarOptions = computed(() => ({
   plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
   initialView: "dayGridMonth",
@@ -73,7 +91,6 @@ const calendarOptions = computed(() => ({
     return {
       id: task.id.toString(),
       title: task.name,
-      // Fallback to task.created_at or a specific date format if start/end fields are named differently
       start: task.end_date
         ? task.end_date.split(" ")[0]
         : new Date().toISOString().split("T")[0],
@@ -105,11 +122,20 @@ const calendarOptions = computed(() => ({
   <div class="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
       <div
-        class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        class="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4"
       >
         <h1 class="text-3xl font-bold text-gray-900 tracking-tight">
           Task Calendar
         </h1>
+        <div class="w-1/4">
+          <Select
+            :options="userOptions"
+            v-model="userId"
+            label="Selected user's tasks will be listed"
+            layout="form"
+            class="mb-4"
+          />
+        </div>
       </div>
 
       <div
@@ -131,7 +157,7 @@ const calendarOptions = computed(() => ({
         v-model="openModal"
         @refresh-task="refresh"
         :eventDate="eventDate"
-        :userId="Number(route.params.id)"
+        :userId="userId"
       />
     </div>
   </div>

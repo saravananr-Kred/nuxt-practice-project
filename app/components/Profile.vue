@@ -26,7 +26,7 @@
     <Transition name="dropdown">
       <div v-if="isOpen" class="profile-dropdown">
         <div class="dropdown-header">
-          <div class="avatar avatar-lg">
+          <div class="avatar size-[42px] rounded-xl">
             <span class="avatar-text">{{ user?.name?.charAt(0) ?? "" }}</span>
           </div>
           <div class="dropdown-user-info">
@@ -38,7 +38,7 @@
         <button @click="logout" class="logout-btn">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="logout-icon"
+            class="size-[18px]"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -120,12 +120,6 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-
-.avatar-lg {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
 }
 
 .avatar-text {

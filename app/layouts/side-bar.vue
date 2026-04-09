@@ -10,11 +10,11 @@ const navLinks = computed(() => [
     path: `/users/${userId.value}`,
     icon: Icons.dashboard,
   },
-  {
-    name: "Calendar",
-    path: `/users/${userId.value}/calendar`,
-    icon: Icons.calendar,
-  },
+  // {
+  //   name: "Calendar",
+  //   path: `/users/${userId.value}/calendar`,
+  //   icon: Icons.calendar,
+  // },
   {
     name: "Task Report",
     path: `/users/${userId.value}/TaskChart`,

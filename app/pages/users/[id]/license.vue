@@ -8,6 +8,7 @@ useSeo("User License", "Display and manage user license");
 const route = useRoute();
 const toastStore = useToastStore();
 const isSaving = ref(false);
+const _pendingOps = new Set<string>();
 const locations = {
   California: [
     "Los Angeles",
@@ -153,23 +154,37 @@ const removeLicense = (data: License, index: number) => {
 };
 
 const confirmDelete = async () => {
+  const targetId = selectedLicense.value?.id;
+  if (!targetId) return;
+
+  const opKey = `delete-license-${targetId}`;
+  if (_pendingOps.has(opKey)) return;
+  _pendingOps.add(opKey);
+
+  const index = licenses.value.findIndex((l) => l.id === targetId);
+  const backupLicense = index !== -1 ? { ...licenses.value[index] } : null;
+
+  if (index !== -1) licenses.value.splice(index, 1);
+  deleteDialog.value = false;
+
   try {
-    await $api("/api/user/license/" + selectedLicense.value?.id, {
+    await $api("/api/user/license/" + targetId, {
       method: "delete",
     });
     toastStore.showSuccess("License Deleted Successfully!");
-    const updated = await getLicenses();
-    licenses.value = updated;
   } catch (error: any) {
+    if (backupLicense) {
+      licenses.value.splice(index, 0, backupLicense as License);
+    }
     const msg =
       error?.data?.message ||
       error?.message ||
       error?.statusMessage ||
       "An unexpected error occurred";
     toastStore.showError(msg);
+  } finally {
+    _pendingOps.delete(opKey);
   }
-
-  deleteDialog.value = false;
 };
 
 const cancelDelete = () => {
@@ -191,17 +206,23 @@ const handleStateChange = (index: number) => {
 };
 
 const saveLicenses = async () => {
-  isSaving.value = true;
+  if (_pendingOps.has("save-licenses")) return;
+  _pendingOps.add("save-licenses");
+
   let validData = validateLicense();
-  console.log(validData, "validData");
   if (errors.value.length > 0) {
     toastStore.showError("Please fill all fields before saving.");
-    isSaving.value = false;
+    _pendingOps.delete("save-licenses");
     return;
   }
+
+  isSaving.value = true;
+  const prevStates = validData.map((l) => l.isSaved);
+  validData.forEach((l) => (l.isSaved = true));
+
   try {
     const { $api } = useNuxtApp();
-    const data = await $api(`/api/user/${route.params.id}/license`, {
+    await $api(`/api/user/${route.params.id}/license`, {
       method: "post",
       body: { licenses: validData },
     });
@@ -210,9 +231,11 @@ const saveLicenses = async () => {
     const updated = await getLicenses();
     licenses.value = updated;
   } catch (e: any) {
+    validData.forEach((l, idx) => (l.isSaved = prevStates[idx] ?? false));
     toastStore.showError(e?.data?.message || e?.message || "Update failed");
   } finally {
     isSaving.value = false;
+    _pendingOps.delete("save-licenses");
   }
 };
 

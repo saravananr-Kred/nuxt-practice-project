@@ -103,7 +103,7 @@ const emit = defineEmits<{
   (e: "refresh-task"): void;
 }>();
 const props = defineProps<{
-  eventDate: string;
+  eventDate?: string;
   userId?: number;
 }>();
 const selectedFile = ref<FileList | null>(null);
@@ -157,6 +157,19 @@ const assignedUser = ref<{ id: number; name: string; email: string } | null>(
   null,
 );
 
+const {
+  error,
+  pending: isLoading,
+  refresh,
+} = await useAsyncData("user-details", async () => {
+  const usersData = await $api<{ data: AllUsersDetailsData[] }>(
+    "/api/user-details?limit=all",
+  );
+  users.value = usersData.data;
+
+  return { users };
+});
+
 const CheckOption = <T extends { value: number | string }>(
   value: number | null,
   array: T[],
@@ -166,27 +179,31 @@ const CheckOption = <T extends { value: number | string }>(
 
 // Build user dropdown options from filteredUsers
 watch(
-  users,
+  [users, assignedTo, assignedUser],
   (newValue) => {
-    userOptions.value = newValue.map((user) => ({
-      label: user.name,
-      value: user.user_id,
-    }));
+    let [usersList, assignedToVal, assignedUserVal] = newValue;
+    let safeUsers = usersList || [];
+
+    if (CheckOption(assignedToVal, userOptions.value)) {
+      userOptions.value = [
+        ...safeUsers.map((user) => ({
+          label: user.name,
+          value: user.user_id,
+        })),
+        {
+          label: assignedUserVal?.name || "",
+          value: assignedUserVal?.id || 0,
+        },
+      ];
+    } else {
+      userOptions.value = safeUsers.map((user) => ({
+        label: user.name,
+        value: user.user_id,
+      }));
+    }
   },
   { immediate: true },
 );
-
-watchEffect(() => {
-  if (CheckOption(assignedTo.value, userOptions.value)) {
-    userOptions.value = [
-      ...userOptions.value,
-      {
-        label: assignedUser.value?.name || "",
-        value: assignedUser.value?.id || 0,
-      },
-    ];
-  }
-});
 
 const id = ref<number>(0);
 
@@ -253,7 +270,6 @@ async function submitTask() {
     }
   }
 
-  console.log(taskData.value, "taskData");
   try {
     if (id.value === 0) {
       await tasksStore.addTask(taskData.value);
