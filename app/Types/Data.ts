@@ -160,6 +160,11 @@ export interface SelectProps {
   density?: "default" | "comfortable" | "compact";
 }
 
+export type onlineType = {
+  id: number;
+  name: string;
+};
+
 export type SearchUserResponse = {
   id: number;
   name: string;

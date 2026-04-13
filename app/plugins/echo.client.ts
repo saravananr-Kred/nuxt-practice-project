@@ -4,7 +4,7 @@ import Echo from "laravel-echo";
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig();
 
-  if (process.client) {
+  if (import.meta.client) {
     window.Pusher = Pusher;
   }
 

@@ -11,9 +11,87 @@
   <Navbar />
 
   <GlobalSearch />
-  <!-- Right: Profile dropdown -->
-  <Profile />
+
+  <div class="flex items-center gap-2">
+    <!-- Notifications -->
+    <NotificationsDropdown
+      @markAsRead="markAsRead"
+      @markAllAsRead="markAllAsRead"
+      :notifications="notifications"
+      :unreadCount="unreadCount"
+    />
+    <!-- Right: Profile dropdown -->
+    <Profile />
+  </div>
 </template>
+
+<script setup lang="ts">
+const notifications = useLocalStorage("notifications", []);
+const unreadCount = useLocalStorage("unreadCount", 0);
+const userStore = useUsersStore();
+const onlineUsers = storeToRefs(userStore).onlineUsers;
+
+const { $notificationEcho } = useNuxtApp() as any;
+
+const markAsRead = (id: number) => {
+  notifications.value = notifications.value.map((notification: any) => {
+    if (notification.id === id) {
+      notification.read = true;
+    }
+    return notification;
+  });
+  unreadCount.value--;
+};
+
+const markAllAsRead = () => {
+  notifications.value = notifications.value.map((notification: any) => {
+    notification.read = true;
+    return notification;
+  });
+  unreadCount.value = 0;
+};
+
+onMounted(() => {
+  const loginStore = useLoginStore();
+  const toastStore = useToastStore();
+  const user = storeToRefs(loginStore).user;
+  $notificationEcho
+    .private("user-" + user.value.id)
+    .listen("liveNotification", (e: any) => {
+      console.log(e);
+      notifications.value = [...notifications.value, e.data];
+      unreadCount.value++;
+      toastStore.showSuccess(e.data.message);
+    });
+
+  $notificationEcho
+    .join("online-users")
+    .here((users: onlineType[]) => {
+      console.log(users);
+      onlineUsers.value = users;
+    })
+    .joining((user: onlineType) => {
+      console.log(user, "join");
+      onlineUsers.value.push(user);
+    })
+    .leaving((user: onlineType) => {
+      console.log(user, "leave");
+      onlineUsers.value = onlineUsers.value.filter((u) => u.id !== user.id);
+    });
+
+  if (JSON.parse(localStorage.getItem("notifications") || "[]")) {
+    notifications.value = JSON.parse(
+      localStorage.getItem("notifications") || "[]",
+    );
+    unreadCount.value = JSON.parse(localStorage.getItem("unreadCount") || "0");
+  }
+});
+console.log(onlineUsers.value, "onlineUsers");
+
+onUnmounted(() => {
+  $notificationEcho.leave("online-users");
+});
+</script>
 
 <style scoped lang="scss">
 .header-brand {

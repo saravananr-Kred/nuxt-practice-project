@@ -117,6 +117,20 @@
                     {{ row[header.key] }}
                   </span>
                 </div>
+                <div
+                  class="flex items-center"
+                  v-else-if="header.key === 'status'"
+                >
+                  <span
+                    class="h-2.5 w-2.5 rounded-full mr-2"
+                    :class="
+                      row[header.key] === 'online'
+                        ? 'bg-green-500 animate-pulse'
+                        : 'bg-gray-300'
+                    "
+                  ></span>
+                  <span class="text-xs capitalize">{{ row[header.key] }}</span>
+                </div>
                 <span
                   v-else
                   :class="{ 'font-medium text-gray-900': hIndex === 0 }"

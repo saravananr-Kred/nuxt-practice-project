@@ -3,12 +3,13 @@ import { storeToRefs } from "pinia";
 import { debounce } from "@/utils/debounce";
 
 const userStore = useUsersStore();
-const { search, filterGender, filterCity, filterState, users } =
+const { search, filterGender, filterCity, filterState, users, onlineUsers } =
   storeToRefs(userStore);
 
 useSeo("Users List", "Display Users List in a table");
 
 const headers = ref([
+  { label: "Status", key: "status" },
   { label: "Name", key: "name" },
   { label: "Email", key: "email" },
   { label: "Phone", key: "phone" },
@@ -84,6 +85,10 @@ const stateOptions = computed(() => {
     ...Object.keys(locations).map((l: string) => ({ label: l, value: l })),
   ];
 });
+
+const isUserOnline = (id: number | string) => {
+  return onlineUsers.value.some((u) => String(u.id) === String(id));
+};
 
 const cityOptions = computed(() => {
   return filterState.value
@@ -233,32 +238,47 @@ async function HandleUserEdit(data: number) {
 function HandleUserDelete(id: number) {
   userStore.DeleteUser(id);
 }
+const formatUsers = (rawData: any[]) => {
+  return rawData.map((user: any) => {
+    const addressParts = [user.street, user.city, user.state].filter(Boolean);
+    const address =
+      addressParts.join(", ") + (user.pincode ? ` - ${user.pincode}` : "");
 
+    return {
+      ...user,
+      address: address || "N/A",
+      status: isUserOnline(user.id) ? "online" : "offline",
+    };
+  });
+};
+
+// Update when API data changes
 watch(
   apiResponse,
   (newData) => {
-    if (newData) {
+    if (newData?.data) {
       lastPage.value = newData.last_page ?? 1;
       totalUsers.value = newData.total ?? 0;
-      if (newData.data) {
-        userStore.users = newData.data.map((user: any) => {
-          const addressParts = [user.street, user.city, user.state].filter(
-            Boolean,
-          );
-          const address =
-            addressParts.join(", ") +
-            (user.pincode ? ` - ${user.pincode}` : "");
-          return {
-            ...user,
-            address: address || "N/A",
-          };
-        });
-      } else {
-        userStore.users = [];
-      }
+      userStore.users = formatUsers(newData.data);
+    } else {
+      userStore.users = [];
     }
   },
   { immediate: true },
+);
+
+// Update when online users list changes (Real-time update)
+watch(
+  onlineUsers,
+  () => {
+    if (userStore.users.length > 0) {
+      userStore.users = userStore.users.map((user) => ({
+        ...user,
+        status: isUserOnline(user.id) ? "online" : "offline",
+      }));
+    }
+  },
+  { deep: true },
 );
 </script>
 

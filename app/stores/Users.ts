@@ -6,6 +6,7 @@ export const useUsersStore = defineStore("User", () => {
   const filterGender = ref<string>("");
   const filterCity = ref<string>("");
   const filterState = ref<string>("");
+  const onlineUsers = ref<onlineType[]>([]);
 
   const singleUser = ref<AllUsersDetailsData | null>(null);
   const { showSuccess, showError } = useToastStore();
@@ -58,7 +59,7 @@ export const useUsersStore = defineStore("User", () => {
       user_id: tempId,
       _optimistic: true,
     } as any;
-    
+
     users.value = [optimisticUser, ...users.value];
 
     try {
@@ -72,14 +73,14 @@ export const useUsersStore = defineStore("User", () => {
         // Update optimistic id if server returns id, else might need refresh
         const index = users.value.findIndex((u) => u.user_id === tempId);
         if (index !== -1) {
-           delete (users.value[index] as any)._optimistic;
+          delete (users.value[index] as any)._optimistic;
         }
       } else {
         handleError("User not added!");
-        users.value = users.value.filter(u => u.user_id !== tempId);
+        users.value = users.value.filter((u) => u.user_id !== tempId);
       }
     } catch (error) {
-      users.value = users.value.filter(u => u.user_id !== tempId);
+      users.value = users.value.filter((u) => u.user_id !== tempId);
       handleError(error);
     } finally {
       _pendingOps.delete(opKey);
@@ -97,7 +98,11 @@ export const useUsersStore = defineStore("User", () => {
 
     if (index !== -1) {
       backupUser = { ...users.value[index] };
-      users.value[index] = { ...users.value[index], ...userData, _optimistic: true };
+      users.value[index] = {
+        ...users.value[index],
+        ...userData,
+        _optimistic: true,
+      };
     }
 
     try {
@@ -164,5 +169,6 @@ export const useUsersStore = defineStore("User", () => {
     DeleteUser,
     fetchSingleUser,
     singleUser,
+    onlineUsers,
   };
 });

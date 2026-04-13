@@ -13,7 +13,7 @@ const publicPath = config.public.fileUrl;
 
 const route = useRoute();
 const userStore = useUsersStore();
-const { singleUser } = storeToRefs(userStore);
+const { singleUser, onlineUsers } = storeToRefs(userStore);
 
 const timeOut = async (delay: number) => {
   return new Promise((r) => setTimeout(r, delay));
@@ -45,6 +45,13 @@ const userTask = computed(() => data.value?.tasks.data || []);
 const completedTasksCount = computed(
   () => userTask.value.filter((task) => task.status === "Completed").length,
 );
+
+const isUserOnline = computed(() => {
+  if (!singleUser.value) return false;
+  return onlineUsers.value.some(
+    (u) => String(u.id) === String(singleUser.value?.id ?? 0),
+  );
+});
 
 // if (error.value && !singleUser.value) {
 //   throw createError({ statusCode: 404, statusMessage: "User Not Found" });
@@ -173,7 +180,12 @@ const completedTasksCount = computed(
                 </div>
 
                 <span
-                  class="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 border-4 border-white rounded-full"
+                  class="absolute bottom-1 right-1 w-6 h-6 border-4 border-white rounded-full transition-colors duration-500"
+                  :class="[
+                    isUserOnline ? 'bg-emerald-500' : 'bg-gray-300',
+                    { 'animate-pulse': isUserOnline },
+                  ]"
+                  :title="isUserOnline ? 'User is online' : 'User is offline'"
                 ></span>
               </div>
 
