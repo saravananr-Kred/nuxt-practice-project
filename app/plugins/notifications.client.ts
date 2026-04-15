@@ -14,14 +14,17 @@ export default defineNuxtPlugin((nuxtApp) => {
   const notificationEcho = new Echo({
     broadcaster: "reverb",
     key: config.public.ReverbAppKey,
-    wsHost: "127.0.0.1",
-    wsPort: 8080,
-    forceTLS: false,
+    wsHost: config.public.reverbHost as string,
+    wsPort: 443,
+    wssPort: 443,
+    forceTLS: true,
     disableStats: true,
-    authEndpoint: "http://localhost:8000/broadcasting/auth",
+    enabledTransports: ["ws", "wss"],
+    authEndpoint: config.public.backendUrl + "/broadcasting/auth",
     auth: {
       headers: {
         Authorization: `Bearer ${token.value ?? ""}`,
+        Accept: "application/json",
       },
     },
   });

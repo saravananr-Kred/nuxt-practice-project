@@ -11,10 +11,12 @@ export default defineNuxtPlugin(() => {
   const echo = new Echo({
     broadcaster: "reverb",
     key: config.public.ReverbAppKey,
-    wsHost: "127.0.0.1",
-    wsPort: 8080,
-    forceTLS: false,
+    wsHost: config.public.reverbHost as string,
+    wsPort: 443,
+    wssPort: 443,
+    forceTLS: true,
     disableStats: true,
+    enabledTransports: ["ws", "wss"],
   });
   return {
     provide: {

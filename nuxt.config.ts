@@ -32,6 +32,8 @@ export default defineNuxtConfig({
       fileUrl: process.env.NUXT_PUBLIC_FILE_URL,
       supabaseStorageUrl: process.env.SUPABASE_STORAGE_URL,
       ReverbAppKey: process.env.REVERB_APP_KEY,
+      reverbHost: process.env.REVERB_HOST,
+      backendUrl: process.env.NUXT_PUBLIC_DOC_URL,
     },
   },
   imports: {
