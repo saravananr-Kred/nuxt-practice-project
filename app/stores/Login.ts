@@ -86,6 +86,13 @@ export const useLoginStore = defineStore("login", () => {
     try {
       token.value = null;
       user.value = null;
+      try {
+        const { $notificationEcho } = useNuxtApp() as any;
+        if ($notificationEcho) {
+          $notificationEcho.leaveAllChannels();
+          $notificationEcho.disconnect();
+        }
+      } catch (err) {}
       navigateTo("/login");
       await $fetch("/api/logout", { method: "POST" });
     } catch (e) {}

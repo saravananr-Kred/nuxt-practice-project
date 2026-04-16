@@ -29,5 +29,23 @@ export default defineNuxtPlugin((nuxtApp) => {
     },
   });
 
+  watch(
+    () => token.value,
+    (newToken) => {
+      const bearer = `Bearer ${newToken || ""}`;
+      const connector = notificationEcho.connector as any;
+      if (connector?.options?.auth?.headers) {
+        connector.options.auth.headers.Authorization = bearer;
+      }
+      if (connector?.pusher?.config?.auth?.headers) {
+        connector.pusher.config.auth.headers.Authorization = bearer;
+      }
+      if (connector?.pusher?.config?.channelAuthorization?.headers) {
+        connector.pusher.config.channelAuthorization.headers.Authorization = bearer;
+      }
+    },
+    { immediate: true }
+  );
+
   nuxtApp.provide("notificationEcho", notificationEcho);
 });
