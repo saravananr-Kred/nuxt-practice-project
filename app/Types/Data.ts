@@ -39,6 +39,7 @@ export type AllUsersResponse = {
   email: string;
   phone: string;
   dob: string;
+  department: string;
 };
 
 export type UserData = {
@@ -70,6 +71,7 @@ export interface UserDetailsData {
   user_id: number;
   role: number;
   profile_image: string | null;
+  department: string | null;
 }
 
 export interface AddUserResponse {

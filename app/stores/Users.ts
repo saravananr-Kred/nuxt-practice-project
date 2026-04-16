@@ -6,6 +6,7 @@ export const useUsersStore = defineStore("User", () => {
   const filterGender = ref<string>("");
   const filterCity = ref<string>("");
   const filterState = ref<string>("");
+  const filterDepartment = ref<string>("");
   const onlineUsers = ref<onlineType[]>([]);
 
   const singleUser = ref<AllUsersDetailsData | null>(null);
@@ -163,6 +164,7 @@ export const useUsersStore = defineStore("User", () => {
     filterGender,
     filterCity,
     filterState,
+    filterDepartment,
     loadingUsers,
     AddUserApi,
     UpdateUser,

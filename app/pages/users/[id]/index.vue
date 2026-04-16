@@ -13,19 +13,23 @@ const publicPath = config.public.fileUrl;
 
 const route = useRoute();
 const userStore = useUsersStore();
+const loginStore = useLoginStore();
+const loginValues = storeToRefs(loginStore).user;
 const { singleUser, onlineUsers } = storeToRefs(userStore);
 
 const timeOut = async (delay: number) => {
   return new Promise((r) => setTimeout(r, delay));
 };
 
-const { data, pending, error } = await useAsyncData(
+const { data, pending, error } = useAsyncData(
   `user-profile-${route.params.id}`,
   async () => {
     const { $api } = useNuxtApp();
 
     const [userData, tasks] = await Promise.all([
-      $api<AllUsersDetailsData>(`/api/user-details/${route.params.id}`),
+      $api<AllUsersDetailsData>(
+        `/api/user-details/${route.params.id}?department=${loginValues.value.department}`,
+      ),
       $api<{ data: TaskData[] }>(`/api/users/${route.params.id}/task`),
     ]);
 
@@ -59,8 +63,8 @@ const isUserOnline = computed(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-5xl mx-auto">
+  <div class="min-h-screen bg-gray-50/50 py-6 px-4 sm:px-6 lg:px-8">
+    <div>
       <div class="mb-8">
         <NuxtLink
           to="/"
@@ -205,6 +209,12 @@ const isUserOnline = computed(() => {
                 >
                   {{ singleUser.gender }}
                 </span>
+                <span
+                  v-if="singleUser.department"
+                  class="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-semibold uppercase tracking-wide"
+                >
+                  {{ singleUser.department }}
+                </span>
               </div>
 
               <div
@@ -298,6 +308,16 @@ const isUserOnline = computed(() => {
                   </p>
                   <p class="font-mono font-medium text-gray-900">
                     #{{ singleUser.id }}
+                  </p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-xl">
+                  <p
+                    class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1"
+                  >
+                    Department
+                  </p>
+                  <p class="font-medium text-gray-900">
+                    {{ singleUser.department || "Not assigned" }}
                   </p>
                 </div>
               </div>

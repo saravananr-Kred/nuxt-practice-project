@@ -102,6 +102,14 @@
             label="Account Role"
             layout="form"
           />
+          <Select
+            v-model="department"
+            v-bind="departmentProps"
+            :error="errors.department"
+            :options="departmentOptions"
+            label="Department"
+            layout="form"
+          />
           <!-- <Input
             v-model="dob"
             v-bind="dobProps"
@@ -225,6 +233,7 @@ const schema = yup.object({
     .min(6, "Pincode must be at least 6 digits")
     .max(6, "Pincode must be at most 6 digits"),
   gender: yup.string().required("Gender is required"),
+  department: yup.string().required("Department is required"),
   phone: yup
     .string()
     .required("Phone is required")
@@ -287,6 +296,7 @@ const { handleSubmit, resetForm, errors, setValues, defineField } = useForm({
     email: "",
     dob: "",
     role: 0,
+    department: "",
   },
 });
 
@@ -302,10 +312,24 @@ const [dob, dobProps] = defineField("dob");
 const [password, passwordProps] = defineField("password");
 const [confirmPassword, confirmPasswordProps] = defineField("confirmPassword");
 const [role, roleProps] = defineField("role");
+const [department, departmentProps] = defineField("department");
 
 let roleOptions = [
   { label: "Admin", value: 1 },
   { label: "User", value: 2 },
+];
+
+const departmentOptions = [
+  { label: "Select a department", value: "" },
+  { label: "Engineering", value: "Engineering" },
+  { label: "Marketing", value: "Marketing" },
+  { label: "Sales", value: "Sales" },
+  { label: "Human Resources", value: "Human Resources" },
+  { label: "Finance", value: "Finance" },
+  { label: "Operations", value: "Operations" },
+  { label: "Product", value: "Product" },
+  { label: "Design", value: "Design" },
+  { label: "Support", value: "Support" },
 ];
 
 const stateOptions = computed(() => {
@@ -420,6 +444,7 @@ watch(
         email: newData.email || "",
         dob: newData.dob || "",
         role: newData.role || 0,
+        department: newData.department || "",
       });
     } else {
       // We are ADDING

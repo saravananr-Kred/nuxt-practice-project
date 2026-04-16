@@ -51,6 +51,7 @@ export const useLoginStore = defineStore("login", () => {
       showSuccess("Logged in successfully!");
       token.value = data.access_token;
       user.value = data.user;
+      console.log(data.user);
       await navigateTo("/");
     } catch (error) {
       handleError(error);

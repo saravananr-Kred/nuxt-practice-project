@@ -64,7 +64,7 @@ const fetchActivitiesAsync = async () => {
       sortBy: sortBy.value,
       sortOrder: sortOrder.value,
     });
-    
+
     activityStore.activities = response.data;
     lastPage.value = response.last_page;
     totalActivities.value = response.total;
@@ -81,7 +81,7 @@ watch(
   [currentPage, perPage, sortBy, sortOrder, filterModule, filterAction],
   () => {
     fetchActivitiesAsync();
-  }
+  },
 );
 
 const debouncedRefresh = debounce(() => fetchActivitiesAsync(), 500);
@@ -138,15 +138,18 @@ const tableDataFormatted = computed(() => {
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6">
+  <div class="py-6 px-4 sm:px-6 lg:px-8 space-y-6">
     <div class="flex items-center justify-between">
       <div>
         <h1 class="font-semibold text-2xl text-gray-900">Activity Logs</h1>
-        <p class="text-sm text-gray-500 mt-1">Track all system activities including logins, user management, and task updates.</p>
+        <p class="text-sm text-gray-500 mt-1">
+          Track all system activities including logins, user management, and
+          task updates.
+        </p>
       </div>
     </div>
     <hr class="border-1 border-[#c0e5c9] mt-2" />
-    
+
     <!-- Filters -->
     <div class="flex items-center flex-wrap gap-4 my-4">
       <div class="w-full sm:flex-1 sm:min-w-[200px]">
@@ -178,7 +181,9 @@ const tableDataFormatted = computed(() => {
     </div>
 
     <!-- Table content replacement -->
-    <div class="w-full bg-white shadow-sm ring-1 ring-gray-200 sm:rounded-xl overflow-hidden mt-6">
+    <div
+      class="w-full bg-white shadow-sm ring-1 ring-gray-200 sm:rounded-xl overflow-hidden mt-6"
+    >
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
           <thead class="bg-gray-50">
@@ -202,12 +207,20 @@ const tableDataFormatted = computed(() => {
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       class="h-3.5 w-3.5 transition-transform duration-200 text-indigo-600"
-                      :class="{ 'rotate-180': sortBy === header.key && sortOrder === 'desc' }"
+                      :class="{
+                        'rotate-180':
+                          sortBy === header.key && sortOrder === 'desc',
+                      }"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                     >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 15l7-7 7 7"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -218,8 +231,15 @@ const tableDataFormatted = computed(() => {
           <tbody class="divide-y divide-gray-200 bg-white">
             <template v-if="loadingActivities">
               <tr v-for="i in 5" :key="'skeleton-' + i" class="animate-pulse">
-                <td v-for="j in headers.length" :key="'cell-' + j" class="px-4 py-4 whitespace-nowrap">
-                  <div class="h-4 bg-gray-100 rounded" :class="j === 1 ? 'w-3/4' : 'w-1/2'"></div>
+                <td
+                  v-for="j in headers.length"
+                  :key="'cell-' + j"
+                  class="px-4 py-4 whitespace-nowrap"
+                >
+                  <div
+                    class="h-4 bg-gray-100 rounded"
+                    :class="j === 1 ? 'w-3/4' : 'w-1/2'"
+                  ></div>
                 </td>
               </tr>
             </template>
@@ -238,28 +258,39 @@ const tableDataFormatted = computed(() => {
                       :src="row.profile_image"
                       class="h-8 w-8 rounded-full object-cover shadow-sm"
                     />
-                    <div v-else class="h-8 w-8 rounded-full bg-gradient-to-br from-[#7bf37b] to-[#26d326] flex items-center justify-center shadow-sm">
-                      <span class="text-[#010145] font-bold text-sm">{{ row.user_name?.charAt(0) || 'U' }}</span>
+                    <div
+                      v-else
+                      class="h-8 w-8 rounded-full bg-gradient-to-br from-[#7bf37b] to-[#26d326] flex items-center justify-center shadow-sm"
+                    >
+                      <span class="text-[#010145] font-bold text-sm">{{
+                        row.user_name?.charAt(0) || "U"
+                      }}</span>
                     </div>
-                    <span class="font-medium text-gray-900">{{ row.user_name }}</span>
+                    <span class="font-medium text-gray-900">{{
+                      row.user_name
+                    }}</span>
                   </div>
                 </td>
-                
+
                 <!-- IP Address -->
-                <td class="px-4 py-4 text-gray-600 whitespace-nowrap font-mono text-xs">
+                <td
+                  class="px-4 py-4 text-gray-600 whitespace-nowrap font-mono text-xs"
+                >
                   {{ row.ip_address }}
                 </td>
 
                 <!-- Module -->
                 <td class="px-4 py-4 text-gray-700 whitespace-nowrap">
-                  <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                  <span
+                    class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
+                  >
                     {{ row.module }}
                   </span>
                 </td>
 
                 <!-- Action Badge -->
                 <td class="px-4 py-4 whitespace-nowrap">
-                  <span 
+                  <span
                     class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset"
                     :class="getActionColor(row.action)"
                   >
@@ -273,16 +304,33 @@ const tableDataFormatted = computed(() => {
                 </td>
               </tr>
             </template>
-            
+
             <template v-else>
               <tr>
                 <td :colspan="headers.length" class="px-4 py-12">
-                  <div class="flex flex-col items-center justify-center text-center">
-                    <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                  <div
+                    class="flex flex-col items-center justify-center text-center"
+                  >
+                    <svg
+                      class="mx-auto h-12 w-12 text-gray-300"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1"
+                        d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                      />
                     </svg>
-                    <h3 class="mt-2 text-sm font-semibold text-gray-900">No activities found</h3>
-                    <p class="mt-1 text-sm text-gray-500">We couldn't find any logs matching your current filters.</p>
+                    <h3 class="mt-2 text-sm font-semibold text-gray-900">
+                      No activities found
+                    </h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                      We couldn't find any logs matching your current filters.
+                    </p>
                   </div>
                 </td>
               </tr>
@@ -306,7 +354,10 @@ const tableDataFormatted = computed(() => {
           </p>
         </div>
         <div>
-          <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+          <nav
+            class="isolate inline-flex -space-x-px rounded-md shadow-sm"
+            aria-label="Pagination"
+          >
             <button
               :disabled="currentPage === 1"
               @click="currentPage--"

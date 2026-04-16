@@ -14,6 +14,8 @@ const openModal = ref<boolean>(false);
 const eventDate = ref<string>("");
 const userId = ref<number>(1);
 const AllUsers = ref<any[]>([]);
+const loginStore = useLoginStore();
+const loginValues = storeToRefs(loginStore).user;
 
 function handleOpenModal(arg: any) {
   eventDate.value = arg.dateStr; // Use dateStr for dateClick
@@ -21,21 +23,33 @@ function handleOpenModal(arg: any) {
 }
 
 // Fetch tasks
-const { data, pending, refresh } = await useAsyncData(
-  `user-tasks-${userId.value}`,
-  async () => {
+const data = ref<any[]>([]);
+const pending = ref(true);
+
+const refresh = async () => {
+  pending.value = true;
+  try {
     const { $api } = useNuxtApp();
     const response = await $api<{ data: any[] }>(
       `/api/users/${userId.value}/task`,
     );
-    return response.data;
-  },
-  { lazy: true, watch: [userId] },
-);
+    data.value = response.data;
+  } catch (err) {
+    console.error(err);
+  } finally {
+    pending.value = false;
+  }
+};
+
+watch(userId, () => {
+  refresh();
+});
 
 onMounted(async () => {
   const { $api } = useNuxtApp();
-  const usersResponse = await $api<any[]>(`/api/user-details?limit=all`);
+  const usersResponse = await $api<any[]>(
+    `/api/user-details?limit=all&department=${loginValues.value.department}`,
+  );
   AllUsers.value = usersResponse;
   if (AllUsers.value.length > 0) {
     userId.value = AllUsers.value[0].user_id;
@@ -119,47 +133,45 @@ const calendarOptions = computed(() => ({
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-      <div
-        class="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4"
-      >
-        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">
-          Task Calendar
-        </h1>
-        <div class="w-1/4">
-          <Select
-            :options="userOptions"
-            v-model="userId"
-            label="Selected user's tasks will be listed"
-            layout="form"
-            class="mb-4"
-          />
-        </div>
+  <div class="min-h-screen bg-gray-50/50 py-6 px-4 sm:px-6 lg:px-8">
+    <div
+      class="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4"
+    >
+      <h1 class="text-3xl font-bold text-gray-900 tracking-tight">
+        Task Calendar
+      </h1>
+      <div class="w-1/4">
+        <Select
+          :options="userOptions"
+          v-model="userId"
+          label="Selected user's tasks will be listed"
+          layout="form"
+          class="mb-4"
+        />
       </div>
-
-      <div
-        class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
-      >
-        <div v-if="pending" class="p-12 flex justify-center">
-          <div
-            class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-          ></div>
-        </div>
-
-        <div v-else class="p-4 sm:p-6 lg:p-8">
-          <FullCalendar :options="calendarOptions" />
-        </div>
-      </div>
-
-      <!-- Edit Task Modal -->
-      <AddTask
-        v-model="openModal"
-        @refresh-task="refresh"
-        :eventDate="eventDate"
-        :userId="userId"
-      />
     </div>
+
+    <div
+      class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
+    >
+      <div v-if="pending" class="p-12 flex justify-center">
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+        ></div>
+      </div>
+
+      <div v-else class="p-4 sm:p-6 lg:p-8">
+        <FullCalendar :options="calendarOptions" />
+      </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <AddTask
+      v-model="openModal"
+      @refresh-task="refresh"
+      :eventDate="eventDate"
+      :userId="userId"
+    />
   </div>
 </template>
 

@@ -83,13 +83,15 @@ async function handleDeleteFromPanel(id: number) {
   await refresh();
 }
 
-const {
-  error,
-  pending: isLoading,
-  refresh,
-} = await useAsyncData(
-  "user-details",
-  async () => {
+const isLoading = ref(true);
+const error = ref<any>(null);
+const loginStore = useLoginStore();
+const loginValues = storeToRefs(loginStore).user;
+
+const refresh = async () => {
+  isLoading.value = true;
+  error.value = null;
+  try {
     const [usersData, tasksData] = await Promise.all([
       $api<{ data: AllUsersDetailsData[] }>(
         "/api/user-details?page=" +
@@ -99,19 +101,25 @@ const {
           "&sort_by=" +
           sortBy.value +
           "&sort_order=" +
-          sortOrder.value,
+          sortOrder.value +
+          "&department=" +
+          loginValues.value.department,
       ),
-      $api<TaskData[]>("/api/tasks"),
+      $api<TaskData[]>("/api/tasks?department=" + loginValues.value.department),
     ]);
     users.value = usersData.data;
     tasks.value = tasksData;
+  } catch (err: any) {
+    error.value = err;
+    console.error(err);
+  } finally {
+    isLoading.value = false;
+  }
+};
 
-    return { users, tasks };
-  },
-  {
-    lazy: true,
-  },
-);
+onMounted(() => {
+  refresh();
+});
 
 watch(error, (error) => {
   const toastStore = useToastStore();
@@ -127,7 +135,7 @@ function handleDeleteTask(id: number) {
 </script>
 
 <template>
-  <main class="task-page">
+  <main class="py-6 px-4 sm:px-6 lg:px-8">
     <!-- Header -->
     <h1 class="font-semibold text-2xl">Tasks List</h1>
     <hr class="border-1 border-[#c0e5c9] mt-2 mb-4" />
@@ -226,10 +234,6 @@ function handleDeleteTask(id: number) {
 </template>
 
 <style scoped lang="scss">
-.task-page {
-  padding: 4px;
-}
-
 .task-header {
   display: flex;
   align-items: center;
@@ -247,7 +251,7 @@ function handleDeleteTask(id: number) {
 .kanban-column {
   background: #f3f4f6;
   border-radius: 12px;
-  height: 400px;
+  height: 416px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

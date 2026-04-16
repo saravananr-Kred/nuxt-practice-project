@@ -24,6 +24,7 @@ const schema = yup.object({
     .min(6, "Pincode must be at least 6 digits")
     .max(6, "Pincode must be at most 6 digits"),
   gender: yup.string().required("Gender is required"),
+  department: yup.string().required("Department is required"),
   phone: yup
     .string()
     .required("Phone is required")
@@ -81,6 +82,7 @@ const { handleSubmit, errors, resetForm, defineField } = useForm({
     email: "",
     dob: "",
     role: 0,
+    department: "",
   },
 });
 
@@ -97,8 +99,22 @@ const [dob, dobProps] = defineField("dob");
 const [password, passwordProps] = defineField("password");
 const [confirmPassword, confirmPasswordProps] = defineField("confirmPassword");
 const [role, roleProps] = defineField("role");
+const [department, departmentProps] = defineField("department");
 const selectedFile = ref<File | null>(null);
 const imagePreview = ref<string | null>(null);
+
+const departmentOptions = [
+  { label: "Select a department", value: "" },
+  { label: "Engineering", value: "Engineering" },
+  { label: "Marketing", value: "Marketing" },
+  { label: "Sales", value: "Sales" },
+  { label: "Human Resources", value: "Human Resources" },
+  { label: "Finance", value: "Finance" },
+  { label: "Operations", value: "Operations" },
+  { label: "Product", value: "Product" },
+  { label: "Design", value: "Design" },
+  { label: "Support", value: "Support" },
+];
 
 function handleFileUpload(event: Event) {
   const target = event.target as HTMLInputElement;
@@ -201,6 +217,14 @@ const handleRegister = handleSubmit(async (values: any) => {
             :options="roleOptions"
             placeholder="Role"
             label="Role"
+            layout="form"
+          />
+          <Select
+            v-model="department"
+            v-bind="departmentProps"
+            :error="errors.department"
+            :options="departmentOptions"
+            label="Department"
             layout="form"
           />
           <Input

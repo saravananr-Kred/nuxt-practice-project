@@ -96,6 +96,8 @@ type SearchUser = {
 };
 const tasksStore = useTasksStore();
 const usersStore = useUsersStore();
+const loginStore = useLoginStore();
+const loginValues = storeToRefs(loginStore).user;
 const open = defineModel<boolean>({ required: true });
 const { singleTask, loadingTasks } = storeToRefs(tasksStore);
 const { users } = storeToRefs(usersStore);
@@ -161,14 +163,21 @@ const {
   error,
   pending: isLoading,
   refresh,
-} = await useAsyncData("user-details", async () => {
-  const usersData = await $api<{ data: AllUsersDetailsData[] }>(
-    "/api/user-details?limit=all",
-  );
-  users.value = usersData.data;
+} = await useAsyncData(
+  "user-details",
+  async () => {
+    const usersData = await $api<{ data: AllUsersDetailsData[] }>(
+      "/api/user-details?limit=all&department=" + loginValues.value.department,
+    );
+    users.value = usersData.data;
 
-  return { users };
-});
+    return { users };
+  },
+  {
+    lazy: true,
+    watch: [loginValues.value.department],
+  },
+);
 
 const CheckOption = <T extends { value: number | string }>(
   value: number | null,

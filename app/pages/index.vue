@@ -12,6 +12,7 @@ const headers = ref([
   { label: "Status", key: "status" },
   { label: "Name", key: "name" },
   { label: "Email", key: "email" },
+  { label: "Department", key: "department" },
   { label: "Phone", key: "phone" },
   { label: "Address", key: "address" },
   { label: "DOB", key: "dob" },
@@ -104,6 +105,19 @@ const cityOptions = computed(() => {
     : [{ label: "Select a state first", value: "" }];
 });
 
+const departmentFilterOptions = [
+  { label: "Department filter", value: "" },
+  { label: "Engineering", value: "Engineering" },
+  { label: "Marketing", value: "Marketing" },
+  { label: "Sales", value: "Sales" },
+  { label: "Human Resources", value: "Human Resources" },
+  { label: "Finance", value: "Finance" },
+  { label: "Operations", value: "Operations" },
+  { label: "Product", value: "Product" },
+  { label: "Design", value: "Design" },
+  { label: "Support", value: "Support" },
+];
+
 function handleSort(column: string) {
   if (sortBy.value === column) {
     sortBy.value = column;
@@ -116,65 +130,75 @@ function handleSort(column: string) {
 }
 
 // Fetch all users
-const cacheKey = computed(
-  () =>
-    `users-${search.value}-${filterGender.value}-${filterCity.value}-${filterState.value}-${currentPage.value}-${perPage.value}-${sortBy.value}-${sortOrder.value}`,
+const loadingUsers = ref(true);
+const apiResponse = ref<any>(null);
+const error = ref<any>(null);
+const loginStore = useLoginStore();
+const loginValues = storeToRefs(loginStore).user;
+
+const fetchUsers = async () => {
+  loadingUsers.value = true;
+  error.value = null;
+
+  let url = "/api/user-details";
+
+  if (search.value !== "") {
+    url += "?search=" + search.value;
+  }
+
+  url.includes("?")
+    ? (url += "&page=" + currentPage.value + "&limit=" + perPage.value)
+    : (url += "?page=" + currentPage.value + "&limit=" + perPage.value);
+
+  url += "&sort_by=" + sortBy.value + "&sort_order=" + sortOrder.value;
+
+  if (filterGender.value) {
+    url += url.includes("?") ? "&" : "?";
+    url += `gender=${encodeURIComponent(filterGender.value)}`;
+  }
+  if (filterCity.value) {
+    url += url.includes("?") ? "&" : "?";
+    url += `city=${encodeURIComponent(filterCity.value)}`;
+  }
+  if (filterState.value) {
+    url += url.includes("?") ? "&" : "?";
+    url += `state=${encodeURIComponent(filterState.value)}`;
+  }
+  url += url.includes("?") ? "&" : "?";
+  url += `department=${encodeURIComponent(loginValues.value.department)}`;
+
+  try {
+    const data = await $api(url);
+    apiResponse.value = data ?? {};
+  } catch (err: any) {
+    console.error(err);
+    error.value = err;
+    apiResponse.value = {};
+  } finally {
+    loadingUsers.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchUsers();
+});
+
+watch(
+  [
+    currentPage,
+    perPage,
+    sortBy,
+    sortOrder,
+    filterGender,
+    filterCity,
+    filterState,
+  ],
+  () => {
+    fetchUsers();
+  },
 );
 
-const {
-  data: apiResponse,
-  pending: loadingUsers,
-  error,
-  refresh,
-} = await useAsyncData(
-  cacheKey,
-  async () => {
-    let url = "/api/user-details";
-
-    if (search.value !== "") {
-      url += "?search=" + search.value;
-    }
-
-    url.includes("?")
-      ? (url += "&page=" + currentPage.value + "&limit=" + perPage.value)
-      : (url += "?page=" + currentPage.value + "&limit=" + perPage.value);
-
-    url += "&sort_by=" + sortBy.value + "&sort_order=" + sortOrder.value;
-
-    if (filterGender.value) {
-      url += url.includes("?") ? "&" : "?";
-      url += `gender=${encodeURIComponent(filterGender.value)}`;
-    }
-    if (filterCity.value) {
-      url += url.includes("?") ? "&" : "?";
-      url += `city=${encodeURIComponent(filterCity.value)}`;
-    }
-    if (filterState.value) {
-      url += url.includes("?") ? "&" : "?";
-      url += `state=${encodeURIComponent(filterState.value)}`;
-    }
-
-    try {
-      const data = await $api(url);
-
-      return data ?? {};
-    } catch (err) {
-      console.error(err);
-      return {};
-    }
-  },
-  {
-    watch: [
-      currentPage,
-      perPage,
-      sortBy,
-      sortOrder,
-      filterGender,
-      filterCity,
-      filterState,
-    ],
-  },
-);
+const refresh = fetchUsers;
 
 watch(error, (error) => {
   const toastStore = useToastStore();
@@ -283,7 +307,7 @@ watch(
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6">
+  <div class="py-6 px-4 sm:px-6 lg:px-8 space-y-6">
     <h1 class="font-semibold text-2xl">Users List</h1>
     <hr class="border-1 border-[#c0e5c9] mt-2" />
     <div class="flex items-center flex-wrap gap-4 my-4">
